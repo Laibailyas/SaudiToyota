@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content Dashboard | Saudi Toyota Championship</title>
+  <link rel="stylesheet" href="/dashboard.css">
+  <script src="/dashboard.js" defer></script>
+</head>
+<body>
+  <main id="login-screen" class="login-screen" hidden>
+    <form id="login-form" class="login-card">
+      <a class="brand" href="/">SAUDI <strong>TOYOTA</strong> CHAMPIONSHIP</a>
+      <h1>Content dashboard</h1>
+      <p>Log in to edit and publish site content.</p>
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">Log in</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </main>
+
+  <main id="editor-screen" class="editor-screen" hidden>
+    <header class="toolbar">
+      <a class="brand" href="/">SAUDI <strong>TOYOTA</strong> CHAMPIONSHIP</a>
+      <div class="toolbar-actions">
+        <label class="page-select-label" for="page-select">Page</label>
+        <select id="page-select"></select>
+        <button id="replace-image" type="button" disabled>Replace image</button>
+        <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+        <button id="save-page" class="primary" type="button" disabled>Save changes</button>
+        <button id="logout" class="quiet" type="button">Log out</button>
+      </div>
+    </header>
+    <div class="editor-hint">
+      Click text in the preview and edit it directly. Select an image, then choose <strong>Replace image</strong>. Save to publish your changes.
+      <span id="editor-status" role="status"></span>
+    </div>
+    <iframe id="page-preview" title="Editable page preview"></iframe>
+  </main>
+</body>
+</html>
