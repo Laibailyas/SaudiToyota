@@ -1,0 +1,30 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{*.html,*.css,*.js,images/**,tournaments/**,Gallery/**,server.py}"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api?route=$1"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/api?path=dashboard.html"
+    },
+    {
+      "source": "/",
+      "destination": "/api?path=index.html"
+    },
+    {
+      "source": "/dashboard-assets/(.*)",
+      "destination": "/api?asset=$1"
+    },
+    {
+      "source": "/(.*\\.html)",
+      "destination": "/api?path=$1"
+    }
+  ]
+}

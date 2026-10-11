@@ -218,6 +218,24 @@ select:focus-visible {
   gap: 10px;
 }
 
+.selection-editor h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.section-fields {
+  display: grid;
+  gap: 16px;
+}
+
+.section-field {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #26323d;
+}
+
 .selection-editor label {
   color: #d3d8de;
   font-size: 13px;
@@ -235,7 +253,7 @@ select:focus-visible {
 }
 
 .selection-editor textarea {
-  min-height: 150px;
+  min-height: 100px;
   resize: vertical;
   line-height: 1.5;
 }
@@ -313,6 +331,7 @@ select:focus-visible {
   }
 
   .editor-layout #page-preview {
+    width: 100%;
     min-height: 55vh;
     flex: 1 0 55vh;
   }

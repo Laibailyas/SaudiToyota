@@ -1,0 +1,306 @@
+import hashlib
+import hmac
+import json
+import logging
+import os
+import re
+import secrets
+import time
+import uuid
+from pathlib import Path
+
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
+from vercel.blob import AsyncBlobClient, BlobError
+
+from server import IMAGE_TYPES, PAGE_PATHS, PAGES, ROOT, UPLOAD_LIMIT
+
+logger = logging.getLogger("dashboard")
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+COOKIE_NAME = "stc_admin"
+SESSION_TTL = 12 * 60 * 60
+REQUEST_LIMIT = 4 * 1024 * 1024
+UPLOAD_NAME = re.compile(r"^[a-f0-9-]+\.(?:gif|jpg|png|webp)$")
+
+
+class StorageUnavailableError(RuntimeError):
+    pass
+
+
+def json_response(data, status_code=200, *, headers=None):
+    response = JSONResponse(data, status_code=status_code, headers=headers)
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+def issue_session() -> str:
+    secret = os.environ.get("DASHBOARD_SECRET", "")
+    if len(secret) < 32:
+        raise ValueError("Set DASHBOARD_SECRET to a random value of at least 32 characters.")
+    expires = int(time.time()) + SESSION_TTL
+    payload = f"{expires}.{secrets.token_urlsafe(24)}"
+    signature = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return f"{payload}.{signature}"
+
+
+def has_session(request: Request) -> bool:
+    secret = os.environ.get("DASHBOARD_SECRET", "")
+    parts = request.cookies.get(COOKIE_NAME, "").split(".", 2)
+    if len(secret) < 32 or len(parts) != 3:
+        return False
+    expires, nonce, signature = parts
+    if not expires.isdecimal() or not nonce or int(expires) < time.time():
+        return False
+    payload = f"{expires}.{nonce}"
+    expected = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(signature, expected)
+
+
+def session_required(request: Request):
+    if has_session(request):
+        return None
+    return json_response({"error": "Please log in to edit site content."}, 401)
+
+
+def blob_client():
+    if not os.environ.get("BLOB_READ_WRITE_TOKEN"):
+        raise StorageUnavailableError("Configure BLOB_READ_WRITE_TOKEN to enable persistent dashboard storage.")
+    return AsyncBlobClient()
+
+
+async def read_blob(pathname: str):
+    result = await blob_client().get(pathname, access="private", use_cache=False)
+    if result is None or result.status_code != 200 or result.stream is None:
+        return None
+    body = bytearray()
+    async for chunk in result.stream:
+        body.extend(chunk)
+    return bytes(body)
+
+
+async def read_page_override(pathname: str):
+    if not os.environ.get("BLOB_READ_WRITE_TOKEN"):
+        return None
+    return await read_blob(pathname)
+
+
+async def write_blob(pathname: str, body: bytes, content_type: str):
+    await blob_client().put(
+        pathname,
+        body,
+        access="private",
+        content_type=content_type,
+        add_random_suffix=False,
+        overwrite=True,
+        cache_control_max_age=60,
+    )
+
+
+async def api_request(request: Request, route: str):
+    route = route.strip("/")
+    if request.method == "GET" and route == "dashboard/session":
+        return json_response({"authenticated": has_session(request)})
+
+    if request.method == "GET" and route == "dashboard/pages":
+        denied = session_required(request)
+        return denied or json_response({"pages": PAGES})
+
+    if request.method == "POST" and route == "dashboard/login":
+        try:
+            credentials = await request.json()
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return json_response({"error": "Invalid login request."}, 400)
+        if not isinstance(credentials, dict):
+            return json_response({"error": "Invalid login request."}, 400)
+        username = credentials.get("username")
+        password = credentials.get("password")
+        configured_password = os.environ.get("ADMIN_PASSWORD", "")
+        configured_username = os.environ.get("ADMIN_USERNAME", "admin")
+        if not configured_password or len(os.environ.get("DASHBOARD_SECRET", "")) < 32:
+            return json_response(
+                {"error": "Configure ADMIN_PASSWORD and a 32-character DASHBOARD_SECRET."},
+                503,
+            )
+        if not isinstance(username, str) or not isinstance(password, str):
+            return json_response({"error": "Incorrect username or password."}, 401)
+        if not hmac.compare_digest(username.encode(), configured_username.encode()) or not hmac.compare_digest(
+            password.encode(), configured_password.encode()
+        ):
+            return json_response({"error": "Incorrect username or password."}, 401)
+        try:
+            token = issue_session()
+        except ValueError as error:
+            return json_response({"error": str(error)}, 503)
+        response = json_response({"ok": True})
+        response.set_cookie(
+            COOKIE_NAME,
+            token,
+            max_age=SESSION_TTL,
+            httponly=True,
+            samesite="strict",
+            secure=request.headers.get("x-forwarded-proto") == "https" or request.url.scheme == "https",
+            path="/",
+        )
+        return response
+
+    if request.method == "POST" and route == "dashboard/logout":
+        response = json_response({"ok": True})
+        response.delete_cookie(COOKIE_NAME, httponly=True, samesite="strict", path="/")
+        return response
+
+    if request.method == "GET" and route == "dashboard/content":
+        denied = session_required(request)
+        if denied:
+            return denied
+        page_path = request.query_params.get("path", "")
+        if page_path not in PAGE_PATHS:
+            return json_response({"error": "Choose a valid page."}, 400)
+        try:
+            content = await read_blob(f"dashboard-content/{page_path}")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not read saved page content.")
+            return json_response({"error": "Saved page content is temporarily unavailable."}, 503)
+        return Response(
+            content or b"",
+            status_code=200 if content is not None else 204,
+            media_type="text/html; charset=utf-8" if content is not None else None,
+            headers={"Cache-Control": "no-store"},
+        )
+
+    if request.method == "POST" and route == "dashboard/save":
+        denied = session_required(request)
+        if denied:
+            return denied
+        try:
+            data = await request.json()
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return json_response({"error": "Invalid save request."}, 400)
+        if not isinstance(data, dict) or data.get("path") not in PAGE_PATHS or not isinstance(data.get("html"), str):
+            return json_response({"error": "Choose a valid page and provide its HTML."}, 400)
+        html = data["html"]
+        if len(html.encode("utf-8")) > REQUEST_LIMIT:
+            return json_response({"error": "Page content is too large to save."}, 413)
+        try:
+            await write_blob(f"dashboard-content/{data['path']}", html.encode("utf-8"), "text/html; charset=utf-8")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not save dashboard page content.")
+            return json_response({"error": "Persistent storage could not save the page."}, 503)
+        return json_response({"ok": True})
+
+    if request.method == "POST" and route == "dashboard/upload":
+        denied = session_required(request)
+        if denied:
+            return denied
+        content_type = request.headers.get("content-type", "").split(";", 1)[0].lower()
+        extension = IMAGE_TYPES.get(content_type)
+        if not extension:
+            return json_response({"error": "Use a PNG, JPEG, WebP, or GIF image."}, 415)
+        image = await request.body()
+        if not image:
+            return json_response({"error": "The selected image is empty."}, 400)
+        if len(image) > min(UPLOAD_LIMIT, REQUEST_LIMIT):
+            return json_response({"error": "Image must be 4 MB or smaller."}, 413)
+        signatures = {
+            ".gif": lambda value: value.startswith((b"GIF87a", b"GIF89a")),
+            ".jpg": lambda value: value.startswith(b"\xff\xd8\xff"),
+            ".png": lambda value: value.startswith(b"\x89PNG\r\n\x1a\n"),
+            ".webp": lambda value: len(value) >= 12 and value.startswith(b"RIFF") and value[8:12] == b"WEBP",
+        }
+        if not signatures[extension](image):
+            return json_response({"error": "The selected file does not match its image type."}, 415)
+        filename = f"{uuid.uuid4()}{extension}"
+        try:
+            await write_blob(f"dashboard-uploads/{filename}", image, content_type)
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not upload dashboard image.")
+            return json_response({"error": "Persistent storage could not save the image."}, 503)
+        return json_response({"url": f"/dashboard-assets/{filename}"})
+
+    return json_response({"error": "Not found."}, 404)
+
+
+async def serve_site_path(request: Request, path: str):
+    path = path or "index.html"
+    if path == "dashboard":
+        path = "dashboard.html"
+    normalized = Path(path.replace("\\", "/"))
+    if normalized.is_absolute() or ".." in normalized.parts or any(part.startswith(".") for part in normalized.parts):
+        return Response("Not found.", status_code=404)
+    relative_path = normalized.as_posix()
+
+    if relative_path == "dashboard.html":
+        return FileResponse(ROOT / relative_path, headers={"Cache-Control": "no-store"})
+
+    if request.method == "GET" and relative_path in PAGE_PATHS:
+        editor_mode = request.query_params.get("editor") == "1"
+        file_path = ROOT / relative_path
+        if not file_path.is_file():
+            return Response("Page not found.", status_code=404)
+        if editor_mode:
+            denied = session_required(request)
+            if denied:
+                return denied
+            try:
+                content = await read_page_override(f"dashboard-content/{relative_path}")
+                html = (
+                    content.decode("utf-8-sig")
+                    if content is not None
+                    else file_path.read_text(encoding="utf-8-sig")
+                )
+                script = '<script src="/dashboard-editor.js?v=2" data-dashboard-editor></script>'
+                if re.search(r"</body\s*>", html, re.IGNORECASE):
+                    html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
+                else:
+                    html += script
+            except (BlobError, StorageUnavailableError):
+                logger.exception("Could not load saved page content for editor preview.")
+                return Response("Page content is temporarily unavailable.", status_code=503)
+            except OSError:
+                logger.exception("Could not read source page for editor preview.")
+                return Response("Page content is temporarily unavailable.", status_code=503)
+            return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+        try:
+            content = await read_page_override(f"dashboard-content/{relative_path}")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not load saved page content.")
+            return Response("Page content is temporarily unavailable.", status_code=503)
+        if content is not None:
+            return HTMLResponse(content.decode("utf-8-sig"), headers={"Cache-Control": "no-store"})
+
+    try:
+        file_path = (ROOT / relative_path).resolve()
+        file_path.relative_to(ROOT)
+    except (OSError, ValueError):
+        return Response("Not found.", status_code=404)
+    if not file_path.is_file():
+        return Response("Not found.", status_code=404)
+    return FileResponse(file_path)
+
+
+@app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH"])
+async def handle_vercel_request(request: Request, path: str = ""):
+    route = request.query_params.get("route")
+    if route is not None:
+        return await api_request(request, route)
+    if path.startswith("api/"):
+        return await api_request(request, path.removeprefix("api/"))
+    if path == "api":
+        return await api_request(request, "")
+
+    asset = request.query_params.get("asset")
+    if asset is not None:
+        filename = Path(asset).name
+        if not UPLOAD_NAME.fullmatch(filename):
+            return Response("Not found.", status_code=404)
+        try:
+            content = await read_blob(f"dashboard-uploads/{filename}")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not read uploaded dashboard image.")
+            return Response("Image is temporarily unavailable.", status_code=503)
+        if content is None:
+            return Response("Not found.", status_code=404)
+        extension = Path(filename).suffix
+        media_type = next((kind for kind, suffix in IMAGE_TYPES.items() if suffix == extension), "application/octet-stream")
+        return Response(content, media_type=media_type, headers={"Cache-Control": "public, max-age=31536000, immutable"})
+
+    return await serve_site_path(request, request.query_params.get("path", path))

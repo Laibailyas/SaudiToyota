@@ -11,15 +11,14 @@
   document.head.appendChild(editorStyle);
   document.body.classList.add("dashboard-edit-mode");
 
-  let selectedElement = null;
-  let selectedKind = "";
+  let selectedGroup = null;
   let nextSelectionId = 0;
-  const selectionIds = new WeakMap();
   const editControls = [];
+  const elementIds = new Map();
 
-  function getSelectionId(element) {
-    if (!selectionIds.has(element)) selectionIds.set(element, ++nextSelectionId);
-    return selectionIds.get(element);
+  function getElementId(element) {
+    if (!elementIds.has(element)) elementIds.set(element, ++nextSelectionId);
+    return elementIds.get(element);
   }
 
   function backgroundUrl(element) {
@@ -32,28 +31,54 @@
     }
   }
 
-  function reportSelection(element, kind) {
-    if (selectedElement) selectedElement.classList.remove(selectedClass);
-    selectedElement = element;
-    selectedKind = kind;
-    element.classList.add(selectedClass);
+  function textElementsIn(container) {
+    return [...container.querySelectorAll(textSelector)].filter((element) => (
+      element.innerText.trim()
+      && !element.closest("[data-dashboard-editor]")
+      && !element.parentElement?.closest(textSelector)
+    ));
+  }
+
+  function imageElementsIn(container) {
+    const images = [...container.querySelectorAll("img")];
+    const backgrounds = [container, ...container.querySelectorAll("*")].filter((element) => (
+      !(element instanceof HTMLImageElement)
+      && getComputedStyle(element).backgroundImage.includes("url(")
+    ));
+    return [...new Set([...images, ...backgrounds])];
+  }
+
+  function reportSelection(group) {
+    if (selectedGroup) selectedGroup.container.classList.remove(selectedClass);
+    selectedGroup = group;
+    group.container.classList.add(selectedClass);
     window.parent.postMessage({
-      type: "dashboard-selection",
-      id: getSelectionId(element),
-      kind,
-      text: kind === "text" ? element.innerText.trim() : "",
-      url: kind === "image"
-        ? (element instanceof HTMLImageElement ? element.currentSrc || element.src : backgroundUrl(element))
-        : "",
+      type: "dashboard-section-selection",
+      title: group.title,
+      items: group.items.map(({ element, kind }) => ({
+        id: getElementId(element),
+        kind,
+        text: kind === "text" ? element.innerText.trim() : "",
+        url: kind === "image"
+          ? (element instanceof HTMLImageElement ? element.currentSrc || element.src : backgroundUrl(element))
+          : "",
+        label: kind === "text"
+          ? `${element.tagName.toLowerCase()}: ${element.innerText.trim().replace(/\s+/g, " ").slice(0, 48)}`
+          : `${element instanceof HTMLImageElement ? "Image" : "Background image"}: ${
+            element instanceof HTMLImageElement
+              ? element.alt || element.title || element.className || "Page image"
+              : element.getAttribute("aria-label") || element.title || element.className || "Page background"
+          }`,
+      })),
     }, window.location.origin);
   }
 
-  function makeEditControl(element, kind) {
+  function makeEditControl(group) {
     const control = document.createElement("button");
     control.type = "button";
     control.setAttribute("data-dashboard-editor", "");
-    control.setAttribute("aria-label", kind === "image" ? "Edit image" : `Edit text: ${element.innerText.trim().slice(0, 80)}`);
-    control.title = kind === "image" ? "Edit image" : "Edit text";
+    control.setAttribute("aria-label", `Edit ${group.title}`);
+    control.title = `Edit ${group.title}`;
     control.style.setProperty("position", "fixed", "important");
     control.style.setProperty("z-index", "2147483647", "important");
     control.style.setProperty("display", "none", "important");
@@ -74,10 +99,10 @@
     control.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
-      reportSelection(element, kind);
+      reportSelection(group);
     });
     document.documentElement.appendChild(control);
-    editControls.push({ element, control });
+    editControls.push({ element: group.container, control });
   }
 
   function updateControlPositions() {
@@ -101,17 +126,31 @@
     }
   }
 
-  const textElements = [...document.querySelectorAll(textSelector)].filter((element) => (
-    element.innerText.trim() && !element.closest("[data-dashboard-editor]")
+  const groupSelector = "section,[role='region'],article";
+  let containers = [...document.querySelectorAll(groupSelector)].filter((element) => (
+    !element.parentElement?.closest(groupSelector)
+    && !element.closest("[data-dashboard-editor]")
   ));
-  const imageElements = [...document.querySelectorAll("img")];
-  const backgroundElements = [...document.querySelectorAll("body *")].filter((element) => (
-    !(element instanceof HTMLImageElement)
-    && getComputedStyle(element).backgroundImage.includes("url(")
-  ));
+  if (containers.length === 0) {
+    const main = document.querySelector("main");
+    containers = main
+      ? [main]
+      : [...document.body.children].filter((element) => !element.matches("script,style,noscript"));
+  }
 
-  textElements.forEach((element) => makeEditControl(element, "text"));
-  [...new Set([...imageElements, ...backgroundElements])].forEach((element) => makeEditControl(element, "image"));
+  const groups = containers.map((container, index) => {
+    const textItems = textElementsIn(container).map((element) => ({ element, kind: "text" }));
+    const imageItems = imageElementsIn(container).map((element) => ({ element, kind: "image" }));
+    return {
+      container,
+      title: container.getAttribute("aria-label")
+        || container.querySelector("h1,h2,h3,h4")?.innerText.trim()
+        || `${container.tagName.toLowerCase()} ${index + 1}`,
+      items: [...textItems, ...imageItems],
+    };
+  }).filter((group) => group.items.length > 0);
+
+  groups.forEach(makeEditControl);
 
   document.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target : null;
@@ -163,21 +202,22 @@
   window.addEventListener("message", (event) => {
     if (event.origin !== window.location.origin || event.source !== window.parent) return;
     const message = event.data;
-    if (!selectedElement || message.id !== getSelectionId(selectedElement)) return;
+    const selectedItem = selectedGroup?.items.find(({ element }) => getElementId(element) === message.id);
+    if (!selectedItem) return;
 
-    if (message.type === "dashboard-update-text" && selectedKind === "text" && typeof message.text === "string") {
-      replaceText(selectedElement, message.text);
+    if (message.type === "dashboard-update-text" && selectedItem.kind === "text" && typeof message.text === "string") {
+      replaceText(selectedItem.element, message.text);
       window.parent.postMessage({ type: "dashboard-change" }, window.location.origin);
       updateControlPositions();
       return;
     }
 
-    if (message.type !== "dashboard-replace-image" || selectedKind !== "image" || typeof message.url !== "string") return;
-    if (selectedElement instanceof HTMLImageElement) {
-      selectedElement.src = message.url;
+    if (message.type !== "dashboard-replace-image" || selectedItem.kind !== "image" || typeof message.url !== "string") return;
+    if (selectedItem.element instanceof HTMLImageElement) {
+      selectedItem.element.src = message.url;
     } else {
-      const previousBackground = getComputedStyle(selectedElement).backgroundImage;
-      selectedElement.style.backgroundImage = `url("${message.url}"), ${previousBackground}`;
+      const previousBackground = getComputedStyle(selectedItem.element).backgroundImage;
+      selectedItem.element.style.backgroundImage = `url("${message.url}"), ${previousBackground}`;
     }
     window.parent.postMessage({ type: "dashboard-change" }, window.location.origin);
     updateControlPositions();

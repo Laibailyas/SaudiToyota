@@ -42,16 +42,9 @@
         <section id="selection-empty" class="selection-empty" aria-live="polite">
           Select a text block or image in the preview.
         </section>
-        <section id="text-editor" class="selection-editor" hidden>
-          <label for="text-value">Text</label>
-          <textarea id="text-value" rows="8"></textarea>
-          <p class="field-hint">Your preview updates as you type.</p>
-        </section>
-        <section id="image-editor" class="selection-editor" hidden>
-          <label for="image-input">Image</label>
-          <img id="image-preview" class="image-preview" alt="Selected image preview" hidden>
-          <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-          <p class="field-hint">PNG, JPEG, WebP, or GIF; up to 10 MB.</p>
+        <section id="section-editor" class="selection-editor" hidden>
+          <h2 id="section-title">Section content</h2>
+          <div id="section-fields" class="section-fields"></div>
         </section>
         <div class="sidebar-footer">
           <span id="editor-status" role="status">Select an item to start editing.</span>
