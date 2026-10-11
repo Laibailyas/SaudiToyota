@@ -33,6 +33,13 @@ def json_response(data, status_code=200, *, headers=None):
     return response
 
 
+def inject_editor_script(html: str) -> str:
+    script = '<script src="/dashboard-editor.js?v=5" data-dashboard-editor></script>'
+    if re.search(r"</body\s*>", html, re.IGNORECASE):
+        return re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
+    return html + script
+
+
 def issue_session() -> str:
     secret = os.environ.get("DASHBOARD_SECRET", "")
     if len(secret) < 32:
@@ -104,6 +111,27 @@ async def api_request(request: Request, route: str):
     if request.method == "GET" and route == "dashboard/pages":
         denied = session_required(request)
         return denied or json_response({"pages": PAGES})
+
+    if request.method == "GET" and route == "dashboard/preview":
+        denied = session_required(request)
+        if denied:
+            return denied
+        page_path = request.query_params.get("path", "")
+        if page_path not in PAGE_PATHS:
+            return json_response({"error": "Choose a valid page."}, 400)
+        file_path = ROOT / page_path
+        try:
+            if not file_path.is_file():
+                return json_response({"error": "Page not found."}, 404)
+            content = await read_page_override(f"dashboard-content/{page_path}")
+            html = content.decode("utf-8-sig") if content is not None else file_path.read_text(encoding="utf-8-sig")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not load saved page content for editor preview.")
+            return Response("Page content is temporarily unavailable.", status_code=503)
+        except OSError:
+            logger.exception("Could not read source page for editor preview.")
+            return Response("Page content is temporarily unavailable.", status_code=503)
+        return HTMLResponse(inject_editor_script(html), headers={"Cache-Control": "no-store"})
 
     if request.method == "POST" and route == "dashboard/login":
         try:
@@ -247,11 +275,7 @@ async def serve_site_path(request: Request, path: str):
                     if content is not None
                     else file_path.read_text(encoding="utf-8-sig")
                 )
-                script = '<script src="/dashboard-editor.js?v=4" data-dashboard-editor></script>'
-                if re.search(r"</body\s*>", html, re.IGNORECASE):
-                    html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
-                else:
-                    html += script
+                html = inject_editor_script(html)
             except (BlobError, StorageUnavailableError):
                 logger.exception("Could not load saved page content for editor preview.")
                 return Response("Page content is temporarily unavailable.", status_code=503)

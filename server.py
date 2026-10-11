@@ -117,6 +117,34 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 if not self.require_session():
                     return
                 self.send_json(200, {"pages": PAGES})
+            elif parsed.path == "/api/dashboard/preview":
+                if not self.require_session():
+                    return
+                query = dict(part.split("=", 1) if "=" in part else (part, "") for part in parsed.query.split("&") if part)
+                relative_path = unquote(query.get("path", ""))
+                if relative_path not in PAGE_PATHS:
+                    self.send_json(400, {"error": "Choose a valid page."})
+                    return
+                selected_path = CONTENT_ROOT.joinpath(*relative_path.split("/"))
+                if not selected_path.is_file():
+                    selected_path = ROOT.joinpath(*relative_path.split("/"))
+                try:
+                    html = selected_path.read_text(encoding="utf-8-sig")
+                except OSError:
+                    self.send_error(404, "Page not found.")
+                    return
+                script = '<script src="/dashboard-editor.js?v=5" data-dashboard-editor></script>'
+                if re.search(r"</body\s*>", html, re.IGNORECASE):
+                    html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
+                else:
+                    html += script
+                body = html.encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
             else:
                 self.send_json(404, {"error": "Not found."})
             return
@@ -157,7 +185,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             except OSError:
                 self.send_error(404, "Page not found.")
                 return
-            script = '<script src="/dashboard-editor.js?v=4" data-dashboard-editor></script>'
+            script = '<script src="/dashboard-editor.js?v=5" data-dashboard-editor></script>'
             if re.search(r"</body\s*>", html, re.IGNORECASE):
                 html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
             else:

@@ -62,8 +62,7 @@ function loadSelectedPage() {
   sectionEditor.hidden = true;
   selectionEmpty.hidden = false;
   showStatus("Select an item to start editing.");
-  const source = `${page.path}?editor=1`;
-  preview.src = source.startsWith("/") ? source : `/${source}`;
+  preview.src = `/api/dashboard/preview?path=${encodeURIComponent(page.path)}`;
 }
 
 async function loadDashboard() {
