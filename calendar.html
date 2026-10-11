@@ -35,12 +35,12 @@ nav{position:absolute;z-index:5}
 /* ===== Section 1: CALENDAR title ===== */
 .cal{position:relative;width:100%;height:100vh;min-height:45.8vw;background:#070707;overflow:hidden}
 .cal .stick{position:relative;height:100%;display:flex;align-items:center;justify-content:center;padding:0 1.2vw}
-.cal h1{position:relative;z-index:2;display:flex;justify-content:center;width:100%;font-family:Montserrat,Arial,sans-serif;font-weight:800;font-size:17.2vw;line-height:.92;letter-spacing:-.045em;text-transform:uppercase;white-space:nowrap}
+.cal h1{position:relative;z-index:2;display:flex;justify-content:center;width:100%;font-family:Montserrat,Arial,sans-serif;font-weight:800;font-size:12vw;line-height:.92;letter-spacing:-.045em;text-transform:uppercase;white-space:nowrap}
 .ch2{display:inline-block;overflow:hidden;padding:.06em .02em .02em}
 .ch2 i{display:block;font-style:normal;transform:translateY(112%);animation:up 1.05s cubic-bezier(.22,1,.36,1) forwards;animation-delay:calc(.25s + var(--i)*.09s)}
 @keyframes up{to{transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.ch2 i{animation:none;transform:none}}
-@media(max-width:700px){.cal h1{font-size:17vw}}
+@media(max-width:700px){.cal h1{font-size:12vw}}
 
 /* ===== Section 2: Event calendar table ===== */
 .sched{position:relative;background:#070707;padding:5vw 3vw 8vw;overflow:hidden}
@@ -56,9 +56,9 @@ nav{position:absolute;z-index:5}
 .sched .hd button.on.asc svg path:last-child{opacity:.25}.sched .hd button.on.desc svg path:first-child{opacity:.25}
 .sched .row{position:relative;padding:.6vw 1.2vw;border-bottom:1px solid rgba(255,255,255,.1);font-family:Inter,Arial,sans-serif;font-weight:700;font-size:2.3vw;line-height:1.15;letter-spacing:-.02em;text-transform:uppercase;color:#fff;cursor:default;transition:background .18s ease,color .18s ease}
 .sched .row .n{position:relative;display:inline-block;width:max-content}
-.sched .row.done .n:after{content:"";position:absolute;left:-.25em;right:-.25em;top:50%;height:.09em;background:#d6ff1f;transform:rotate(-24deg);transform-origin:center}
-.sched .row:hover{background:#d6ff1f;color:#050505}
-.sched .row:hover .n:after{background:#050505}
+.sched .row.done .n:after{content:"";position:absolute;left:-.25em;right:-.25em;top:50%;height:.09em;background:#e8202e;transform:rotate(-24deg);transform-origin:center}
+.sched .row:hover{background:#e8202e;color:#fff}
+.sched .row:hover .n:after{background:#fff}
 .sched .row .ev{padding-right:2vw}
 .sched .row .dt,.sched .row .ty{white-space:nowrap}
 .sched .empty{padding:3vw 1.2vw;color:rgba(255,255,255,.5);font-size:1.2vw}
@@ -330,7 +330,7 @@ html,body{background:#090708}
 <a href="Gallery/gallery.html"><svg viewBox="0 0 24 24" style="fill:#fff;stroke:none"><path d="M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/><path d="M10 9.5v5l4.5-2.5z" style="fill:#0b1218"/></svg>Gallery</a>
 <a class="lang" href="#">العربية <span class="flag"></span></a>
 </div></nav>
-<section class="cal" id="reveal"><div class="stick"><h1 aria-label="Calendar"><span class="ch2"><i style="--i:0">C</i></span><span class="ch2"><i style="--i:1">A</i></span><span class="ch2"><i style="--i:2">L</i></span><span class="ch2"><i style="--i:3">E</i></span><span class="ch2"><i style="--i:4">N</i></span><span class="ch2"><i style="--i:5">D</i></span><span class="ch2"><i style="--i:6">A</i></span><span class="ch2"><i style="--i:7">R</i></span></h1></div></section>
+<section class="cal" id="reveal"><div class="stick"><h1 aria-label="Events"><span class="ch2"><i style="--i:0">E</i></span><span class="ch2"><i style="--i:1">V</i></span><span class="ch2"><i style="--i:2">E</i></span><span class="ch2"><i style="--i:3">N</i></span><span class="ch2"><i style="--i:4">T</i></span><span class="ch2"><i style="--i:5">S</i></span></h1></div></section>
 <section class="sched" id="schedule">
   <div class="tabs" id="tabs"></div>
   <div class="hd" id="hd"><span></span>
