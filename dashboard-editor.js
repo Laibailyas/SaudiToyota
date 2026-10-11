@@ -25,7 +25,7 @@
     const match = getComputedStyle(element).backgroundImage.match(/url\(["']?(.*?)["']?\)/);
     if (!match) return "";
     try {
-      return new URL(match[1], window.location.href).href;
+      return new URL(match[1], document.baseURI).href;
     } catch {
       return "";
     }

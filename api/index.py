@@ -33,8 +33,15 @@ def json_response(data, status_code=200, *, headers=None):
     return response
 
 
-def inject_editor_script(html: str) -> str:
-    script = '<script src="/dashboard-editor.js?v=5" data-dashboard-editor></script>'
+def inject_editor_script(html: str, page_path: str) -> str:
+    directory = page_path.rpartition("/")[0]
+    base_href = f"/{directory}/" if directory else "/"
+    base = f'<base href="{base_href}" data-dashboard-editor-base>'
+    if re.search(r"<base\b", html, re.IGNORECASE):
+        html = re.sub(r"<base\b[^>]*>", base, html, count=1, flags=re.IGNORECASE)
+    else:
+        html = re.sub(r"<head\b[^>]*>", lambda match: match.group(0) + base, html, count=1, flags=re.IGNORECASE)
+    script = '<script src="/dashboard-editor.js?v=6" data-dashboard-editor></script>'
     if re.search(r"</body\s*>", html, re.IGNORECASE):
         return re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
     return html + script
@@ -131,7 +138,7 @@ async def api_request(request: Request, route: str):
         except OSError:
             logger.exception("Could not read source page for editor preview.")
             return Response("Page content is temporarily unavailable.", status_code=503)
-        return HTMLResponse(inject_editor_script(html), headers={"Cache-Control": "no-store"})
+        return HTMLResponse(inject_editor_script(html, page_path), headers={"Cache-Control": "no-store"})
 
     if request.method == "POST" and route == "dashboard/login":
         try:
@@ -275,7 +282,7 @@ async def serve_site_path(request: Request, path: str):
                     if content is not None
                     else file_path.read_text(encoding="utf-8-sig")
                 )
-                html = inject_editor_script(html)
+                html = inject_editor_script(html, relative_path)
             except (BlobError, StorageUnavailableError):
                 logger.exception("Could not load saved page content for editor preview.")
                 return Response("Page content is temporarily unavailable.", status_code=503)

@@ -133,7 +133,20 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 except OSError:
                     self.send_error(404, "Page not found.")
                     return
-                script = '<script src="/dashboard-editor.js?v=5" data-dashboard-editor></script>'
+                directory = relative_path.rpartition("/")[0]
+                base_href = f"/{directory}/" if directory else "/"
+                base = f'<base href="{base_href}" data-dashboard-editor-base>'
+                if re.search(r"<base\b", html, re.IGNORECASE):
+                    html = re.sub(r"<base\b[^>]*>", base, html, count=1, flags=re.IGNORECASE)
+                else:
+                    html = re.sub(
+                        r"<head\b[^>]*>",
+                        lambda match: match.group(0) + base,
+                        html,
+                        count=1,
+                        flags=re.IGNORECASE,
+                    )
+                script = '<script src="/dashboard-editor.js?v=6" data-dashboard-editor></script>'
                 if re.search(r"</body\s*>", html, re.IGNORECASE):
                     html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
                 else:
@@ -185,7 +198,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             except OSError:
                 self.send_error(404, "Page not found.")
                 return
-            script = '<script src="/dashboard-editor.js?v=5" data-dashboard-editor></script>'
+            script = '<script src="/dashboard-editor.js?v=6" data-dashboard-editor></script>'
             if re.search(r"</body\s*>", html, re.IGNORECASE):
                 html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
             else:

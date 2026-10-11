@@ -207,6 +207,7 @@ saveButton.addEventListener("click", async () => {
     documentCopy.querySelector("body")?.classList.remove("dashboard-edit-mode");
     documentCopy.querySelector("#dashboard-edit-style")?.remove();
     documentCopy.querySelectorAll("[data-dashboard-editor]").forEach((element) => element.remove());
+    documentCopy.querySelectorAll("[data-dashboard-editor-base]").forEach((element) => element.remove());
     const html = `<!DOCTYPE html>\n${documentCopy.outerHTML}`;
     await request("/api/dashboard/save", {
       method: "POST",
