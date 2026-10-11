@@ -28,17 +28,37 @@
       <div class="toolbar-actions">
         <label class="page-select-label" for="page-select">Page</label>
         <select id="page-select"></select>
-        <button id="replace-image" type="button" disabled>Replace image</button>
-        <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
-        <button id="save-page" class="primary" type="button" disabled>Save changes</button>
         <button id="logout" class="quiet" type="button">Log out</button>
       </div>
     </header>
-    <div class="editor-hint">
-      Click text in the preview and edit it directly. Select an image, then choose <strong>Replace image</strong>. Save to publish your changes.
-      <span id="editor-status" role="status"></span>
+    <div class="editor-layout">
+      <iframe id="page-preview" title="Page preview with editable content"></iframe>
+      <aside id="edit-sidebar" class="edit-sidebar" aria-label="Edit selected content">
+        <div class="sidebar-heading">
+          <span class="eyebrow">CONTENT EDITOR</span>
+          <h1>Edit page</h1>
+          <p>Choose a pencil on the page to edit its text or image.</p>
+        </div>
+        <section id="selection-empty" class="selection-empty" aria-live="polite">
+          Select a text block or image in the preview.
+        </section>
+        <section id="text-editor" class="selection-editor" hidden>
+          <label for="text-value">Text</label>
+          <textarea id="text-value" rows="8"></textarea>
+          <p class="field-hint">Your preview updates as you type.</p>
+        </section>
+        <section id="image-editor" class="selection-editor" hidden>
+          <label for="image-input">Image</label>
+          <img id="image-preview" class="image-preview" alt="Selected image preview" hidden>
+          <input id="image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+          <p class="field-hint">PNG, JPEG, WebP, or GIF; up to 10 MB.</p>
+        </section>
+        <div class="sidebar-footer">
+          <span id="editor-status" role="status">Select an item to start editing.</span>
+          <button id="save-page" class="primary" type="button" disabled>Save changes</button>
+        </div>
+      </aside>
     </div>
-    <iframe id="page-preview" title="Editable page preview"></iframe>
   </main>
 </body>
 </html>

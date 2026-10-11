@@ -3,11 +3,14 @@ const editorScreen = document.getElementById("editor-screen");
 const loginForm = document.getElementById("login-form");
 const loginError = document.getElementById("login-error");
 const pageSelect = document.getElementById("page-select");
-const pageSelectLabel = document.querySelector(".page-select-label");
 const preview = document.getElementById("page-preview");
 const saveButton = document.getElementById("save-page");
-const replaceButton = document.getElementById("replace-image");
 const imageInput = document.getElementById("image-input");
+const imagePreview = document.getElementById("image-preview");
+const selectionEmpty = document.getElementById("selection-empty");
+const textEditor = document.getElementById("text-editor");
+const textValue = document.getElementById("text-value");
+const imageEditor = document.getElementById("image-editor");
 const logoutButton = document.getElementById("logout");
 const status = document.getElementById("editor-status");
 
@@ -15,7 +18,7 @@ let pages = [];
 let dirty = false;
 let selectedImage = false;
 let selectionId = null;
-let savedSource = "";
+let savedPagePath = "";
 
 async function request(url, options = {}) {
   const response = await fetch(url, {
@@ -58,10 +61,16 @@ function loadSelectedPage() {
   selectedImage = false;
   selectionId = null;
   saveButton.disabled = true;
-  replaceButton.disabled = true;
-  showStatus("");
-  savedSource = `${page.path}?editor=1`;
-  preview.src = savedSource;
+  savedPagePath = page.path;
+  textValue.value = "";
+  imageInput.value = "";
+  imagePreview.removeAttribute("src");
+  imagePreview.hidden = true;
+  textEditor.hidden = true;
+  imageEditor.hidden = true;
+  selectionEmpty.hidden = false;
+  showStatus("Select an item to start editing.");
+  preview.src = `/${page.path}?editor=1`;
 }
 
 async function loadDashboard() {
@@ -78,7 +87,6 @@ async function loadDashboard() {
     option.textContent = page.title;
     return option;
   }));
-  pageSelectLabel.title = "Click text in the preview to edit it. Select an image to replace it.";
   showEditor();
   loadSelectedPage();
 }
@@ -105,7 +113,7 @@ loginForm.addEventListener("submit", async (event) => {
 
 pageSelect.addEventListener("change", () => {
   if (dirty && !window.confirm("Discard unsaved changes and open another page?")) {
-    pageSelect.value = pages.find((page) => `${page.path}?editor=1` === savedSource)?.path || pageSelect.value;
+    pageSelect.value = savedPagePath;
     return;
   }
   loadSelectedPage();
@@ -114,7 +122,10 @@ pageSelect.addEventListener("change", () => {
 preview.addEventListener("load", () => {
   selectedImage = false;
   selectionId = null;
-  replaceButton.disabled = true;
+  textEditor.hidden = true;
+  imageEditor.hidden = true;
+  selectionEmpty.hidden = false;
+  imagePreview.hidden = true;
   if (dirty) markDirty();
 });
 
@@ -123,20 +134,37 @@ window.addEventListener("message", (event) => {
   if (event.data?.type === "dashboard-selection") {
     selectedImage = event.data.kind === "image";
     selectionId = event.data.id;
-    replaceButton.disabled = !selectedImage;
-    showStatus(selectedImage ? "Image selected" : "Text selected");
+    selectionEmpty.hidden = true;
+    textEditor.hidden = selectedImage;
+    imageEditor.hidden = !selectedImage;
+    if (selectedImage) {
+      imagePreview.hidden = !event.data.url;
+      if (event.data.url) imagePreview.src = event.data.url;
+      showStatus("Choose a replacement image, then save the page.");
+    } else {
+      textValue.value = event.data.text || "";
+      showStatus("Edit the text here. The preview updates as you type.");
+      textValue.focus();
+    }
     return;
   }
   if (event.data?.type === "dashboard-change") markDirty();
 });
 
-replaceButton.addEventListener("click", () => imageInput.click());
+textValue.addEventListener("input", () => {
+  if (selectedImage || selectionId === null) return;
+  preview.contentWindow.postMessage({
+    type: "dashboard-update-text",
+    id: selectionId,
+    text: textValue.value,
+  }, window.location.origin);
+  markDirty();
+});
 
 imageInput.addEventListener("change", async () => {
   const file = imageInput.files?.[0];
   imageInput.value = "";
   if (!file || !selectedImage || selectionId === null) return;
-  replaceButton.disabled = true;
   showStatus("Uploading image...");
   try {
     const result = await request("/api/dashboard/upload", {
@@ -149,10 +177,11 @@ imageInput.addEventListener("change", async () => {
       id: selectionId,
       url: result.url,
     }, window.location.origin);
+    imagePreview.src = result.url;
+    imagePreview.hidden = false;
     markDirty("Image replaced. Save to publish.");
   } catch (error) {
     showStatus(error.message, true);
-    replaceButton.disabled = false;
   }
 });
 
@@ -169,7 +198,7 @@ saveButton.addEventListener("click", async () => {
     });
     documentCopy.querySelector("body")?.classList.remove("dashboard-edit-mode");
     documentCopy.querySelector("#dashboard-edit-style")?.remove();
-    documentCopy.querySelector("[data-dashboard-editor]")?.remove();
+    documentCopy.querySelectorAll("[data-dashboard-editor]").forEach((element) => element.remove());
     const html = `<!DOCTYPE html>\n${documentCopy.outerHTML}`;
     await request("/api/dashboard/save", {
       method: "POST",
@@ -177,6 +206,7 @@ saveButton.addEventListener("click", async () => {
       body: JSON.stringify({ path: pageSelect.value, html }),
     });
     dirty = false;
+    saveButton.disabled = true;
     showStatus("Saved and published.");
   } catch (error) {
     saveButton.disabled = false;

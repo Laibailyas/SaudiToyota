@@ -31,14 +31,17 @@ PAGES = [
     {"path": "registration.html", "title": "Registration"},
     {"path": "photographer.html", "title": "Photographer Registration"},
     {"path": "news.html", "title": "News"},
+    {"path": "news-samf-awards-2025.html", "title": "SAMF Awards 2025"},
+    {"path": "news-tabuk-round-cancelled.html", "title": "Tabuk Round Update"},
+    {"path": "news-tabuk-rally-postponed.html", "title": "Tabuk Rally Postponed"},
     {"path": "Gallery/gallery.html", "title": "Gallery"},
-    {"path": "Tournament Pages Updated/karting.html", "title": "Karting"},
-    {"path": "Tournament Pages Updated/autocross.html", "title": "Autocross"},
-    {"path": "Tournament Pages Updated/time-attack.html", "title": "Time Attack"},
-    {"path": "Tournament Pages Updated/drift.html", "title": "Drift"},
-    {"path": "Tournament Pages Updated/hill-climb.html", "title": "Hill Climb"},
-    {"path": "Tournament Pages Updated/baja.html", "title": "Baja"},
-    {"path": "Tournament Pages Updated/e-gaming.html", "title": "E-Gaming"},
+    {"path": "tournaments/karting.html", "title": "Karting"},
+    {"path": "tournaments/autocross.html", "title": "Autocross"},
+    {"path": "tournaments/time-attack.html", "title": "Time Attack"},
+    {"path": "tournaments/drift.html", "title": "Drift"},
+    {"path": "tournaments/hill-climb.html", "title": "Hill Climb"},
+    {"path": "tournaments/baja.html", "title": "Baja"},
+    {"path": "tournaments/e-gaming.html", "title": "E-Gaming"},
 ]
 PAGE_PATHS = {page["path"] for page in PAGES}
 IMAGE_TYPES = {
@@ -154,7 +157,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             except OSError:
                 self.send_error(404, "Page not found.")
                 return
-            script = '<script src="/dashboard-editor.js" data-dashboard-editor></script>'
+            script = '<script src="/dashboard-editor.js?v=2" data-dashboard-editor></script>'
             if re.search(r"</body\s*>", html, re.IGNORECASE):
                 html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
             else:
