@@ -247,7 +247,7 @@ async def serve_site_path(request: Request, path: str):
                     if content is not None
                     else file_path.read_text(encoding="utf-8-sig")
                 )
-                script = '<script src="/dashboard-editor.js?v=2" data-dashboard-editor></script>'
+                script = '<script src="/dashboard-editor.js?v=4" data-dashboard-editor></script>'
                 if re.search(r"</body\s*>", html, re.IGNORECASE):
                     html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
                 else:

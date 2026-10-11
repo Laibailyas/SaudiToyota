@@ -34,15 +34,18 @@
   function textElementsIn(container) {
     return [...container.querySelectorAll(textSelector)].filter((element) => (
       element.innerText.trim()
-      && !element.closest("[data-dashboard-editor]")
+      && !element.closest("[data-dashboard-editor],nav,header,footer")
       && !element.parentElement?.closest(textSelector)
     ));
   }
 
   function imageElementsIn(container) {
-    const images = [...container.querySelectorAll("img")];
+    const images = [...container.querySelectorAll("img")].filter((element) => (
+      !element.closest("nav,header,footer")
+    ));
     const backgrounds = [container, ...container.querySelectorAll("*")].filter((element) => (
       !(element instanceof HTMLImageElement)
+      && !element.closest("nav,header,footer")
       && getComputedStyle(element).backgroundImage.includes("url(")
     ));
     return [...new Set([...images, ...backgrounds])];
@@ -91,7 +94,7 @@
     control.style.setProperty("border-radius", "50%", "important");
     control.style.setProperty("background", "#e8202e", "important");
     control.style.setProperty("box-shadow", "0 2px 8px #0008", "important");
-    control.style.setProperty("cursor", "pointer", "important");
+    control.style.setProperty("cursor", "default", "important");
     control.style.setProperty("pointer-events", "auto", "important");
     control.style.setProperty("align-items", "center", "important");
     control.style.setProperty("justify-items", "center", "important");
