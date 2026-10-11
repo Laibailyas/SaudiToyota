@@ -30,4 +30,6 @@ The project includes a FastAPI function for Vercel, while `server.py` remains av
 
 The Vercel function limits image uploads to 4 MB. Text and image changes persist in Blob across deployments. The `api/index.py` function includes the static site files it serves; Vercel serves the backend and website on the same domain.
 
+The dashboard loads editor previews through an authenticated function endpoint, which injects the edit controls even when Vercel serves the public HTML pages as static files.
+
 The backend can also run on another host that supports Python ASGI/FastAPI and outbound HTTPS, using the same Vercel Blob token for persistent storage. For ordinary hosting with a persistent local filesystem, the existing `python server.py` backend can continue to use `.dashboard-content/` and `.dashboard-uploads/` instead.
