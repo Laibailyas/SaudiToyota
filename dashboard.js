@@ -198,6 +198,10 @@ saveButton.addEventListener("click", async () => {
   showStatus("Saving changes...");
   try {
     const documentCopy = preview.contentDocument.documentElement.cloneNode(true);
+    if (pageSelect.value === "calendar.html") {
+      const eventRows = documentCopy.querySelector("#rows");
+      if (eventRows) eventRows.dataset.dashboardCalendarSnapshot = "true";
+    }
     documentCopy.querySelectorAll("[contenteditable]").forEach((element) => {
       element.removeAttribute("contenteditable");
     });

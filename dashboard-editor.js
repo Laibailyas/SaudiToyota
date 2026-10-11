@@ -1,7 +1,7 @@
 (function () {
   if (window.parent === window) return;
 
-  const textSelector = "h1,h2,h3,h4,h5,h6,p,li,a,button,label,strong,em,small,b,figcaption,blockquote";
+  const textSelector = "h1,h2,h3,h4,h5,h6,p,li,a,button,label,strong,em,small,b,figcaption,blockquote,.sched .row .ev,.sched .row .dt,.sched .row .ty";
   const selectedClass = "dashboard-edit-selected";
   const editorStyle = document.createElement("style");
   editorStyle.id = "dashboard-edit-style";

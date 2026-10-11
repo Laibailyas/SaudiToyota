@@ -369,15 +369,24 @@ var DATA=[
 (function(){
  var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'],now=new Date();
  var rows=document.getElementById('rows'),pop=document.getElementById('pop'),tabs=document.getElementById('tabs'),hd=document.getElementById('hd');
+ if(rows.dataset.dashboardCalendarSnapshot==='true'){
+  var savedRows=[].slice.call(rows.querySelectorAll('.row[data-event-date]'));
+  if(savedRows.length)DATA=savedRows.map(function(row){
+   var date=row.querySelector('.dt').textContent.trim(),parts=date.match(/^(\d{1,2})\s+([A-Z]{3})\s+(\d{2,4})$/i),month=parts?M.indexOf(parts[2].toUpperCase()):-1;
+   var parsedDate=parts&&month>=0?String(parts[3].length===2?2000+Number(parts[3]):Number(parts[3]))+'-'+('0'+(month+1)).slice(-2)+'-'+('0'+Number(parts[1])).slice(-2):row.dataset.eventDate;
+   return {ev:row.querySelector('.ev').textContent.trim(),date:parsedDate,type:row.querySelector('.ty').textContent.trim(),no:Number(row.dataset.eventNumber)};
+  });
+ }
  DATA.slice().sort(function(a,b){return a.date<b.date?-1:1}).forEach(function(r,i){r.no=i+1});
  var f='All',sk='date',sd=1;
  tabs.innerHTML=['All'].concat(TYPES).map(function(t){return '<button data-t="'+t+'"'+(t==='All'?' class="on"':'')+'>'+t+'</button>'}).join('');
+ function escapeHtml(value){return String(value).replace(/[&<>"']/g,function(char){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]})}
  function render(){
   var list=DATA.filter(function(r){return f==='All'||r.type===f});
   list.sort(function(a,b){var x=sk==='ev'?a.ev:sk==='type'?a.type:a.date,y=sk==='ev'?b.ev:sk==='type'?b.type:b.date;return(x<y?-1:x>y?1:0)*sd});
   rows.innerHTML=list.length?list.map(function(r){
    var d=new Date(r.date),dd=('0'+d.getDate()).slice(-2)+' '+M[d.getMonth()]+' '+String(d.getFullYear()).slice(2);
-   return '<div class="row'+(d<now?' done':'')+'" data-key="'+IMG[r.type]+'"><span><span class="n">'+('0'+r.no).slice(-2)+'</span></span><span class="ev">'+r.ev+'</span><span class="dt">'+dd+'</span><span class="ty">'+r.type+'</span></div>';
+   return '<div class="row'+(d<now?' done':'')+'" data-key="'+(IMG[r.type]||'')+'" data-event-date="'+escapeHtml(r.date)+'" data-event-number="'+r.no+'"><span><span class="n">'+('0'+r.no).slice(-2)+'</span></span><span class="ev">'+escapeHtml(r.ev)+'</span><span class="dt">'+dd+'</span><span class="ty">'+escapeHtml(r.type)+'</span></div>';
   }).join(''):'<div class="empty">There are no events currently scheduled for this type.</div>';
   [].forEach.call(hd.querySelectorAll('button'),function(b){var on=b.dataset.k===sk;b.className=on?'on '+(sd>0?'asc':'desc'):''});
  }
