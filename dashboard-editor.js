@@ -41,7 +41,7 @@
 
   function imageElementsIn(container) {
     const images = [...container.querySelectorAll("img")].filter((element) => (
-      !element.closest("nav,header,footer")
+      !element.closest("nav,header,footer") || element.matches("nav img.logo")
     ));
     const backgrounds = [container, ...container.querySelectorAll("*")].filter((element) => (
       !(element instanceof HTMLImageElement)

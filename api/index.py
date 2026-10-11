@@ -41,7 +41,7 @@ def inject_editor_script(html: str, page_path: str) -> str:
         html = re.sub(r"<base\b[^>]*>", base, html, count=1, flags=re.IGNORECASE)
     else:
         html = re.sub(r"<head\b[^>]*>", lambda match: match.group(0) + base, html, count=1, flags=re.IGNORECASE)
-    script = '<script src="/dashboard-editor.js?v=6" data-dashboard-editor></script>'
+    script = '<script src="/dashboard-editor.js?v=7" data-dashboard-editor></script>'
     if re.search(r"</body\s*>", html, re.IGNORECASE):
         return re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
     return html + script

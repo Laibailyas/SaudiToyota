@@ -146,7 +146,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                         count=1,
                         flags=re.IGNORECASE,
                     )
-                script = '<script src="/dashboard-editor.js?v=6" data-dashboard-editor></script>'
+                script = '<script src="/dashboard-editor.js?v=7" data-dashboard-editor></script>'
                 if re.search(r"</body\s*>", html, re.IGNORECASE):
                     html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
                 else:
@@ -198,7 +198,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             except OSError:
                 self.send_error(404, "Page not found.")
                 return
-            script = '<script src="/dashboard-editor.js?v=6" data-dashboard-editor></script>'
+            script = '<script src="/dashboard-editor.js?v=7" data-dashboard-editor></script>'
             if re.search(r"</body\s*>", html, re.IGNORECASE):
                 html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
             else:
