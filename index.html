@@ -85,7 +85,7 @@ nav a.lang{margin-left:.8vw;border:1px solid rgba(255,255,255,.8);border-radius:
 :root{--cw:28vw;--gap:1.2vw}
 .cards{position:relative;background:#070707}
 .cards .pin{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center}
-.ctrack{display:flex;gap:var(--gap);flex:none;will-change:transform;transform:translate3d(100vw,0,0)}
+.ctrack{display:flex;gap:var(--gap);flex:none;will-change:transform;transform:translate3d(12vw,0,0)}
 .card{position:relative;flex:none;width:var(--cw);height:min(calc(var(--cw)*1.3333),86vh);border-radius:1vw;overflow:hidden;background:#111;container-type:inline-size}
 .card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 72%,rgba(0,0,0,.9) 100%)}
@@ -327,27 +327,29 @@ addEventListener('scroll',u,{passive:true});addEventListener('resize',u);u();
 <script>
 /* ===== Section 3 logic ===== */
 (function(){
-var SPEED=1.25;         /* >1 = cards move faster than the scroll */
-var sec=document.getElementById('cards'),trk=document.getElementById('ctrack');
-var vw,tw,D,X1,tot;
-function layout(){
- vw=innerWidth;tw=trk.getBoundingClientRect().width;
- var cw=trk.firstElementChild.getBoundingClientRect().width,pad=vw*.02;
- X1=vw-pad-tw;   /* last card stops at the right edge, no empty space after it */
- D=vw-X1;
- sec.style.height=(innerHeight+D/SPEED)+'px';
- tot=sec.offsetHeight-innerHeight;
- upd();
-}
-function upd(){
- var r=sec.getBoundingClientRect();
- var p=Math.min(1,Math.max(0,-r.top/tot));
- trk.style.transform='translate3d('+(vw-p*D).toFixed(1)+'px,0,0)';
-}
-addEventListener('scroll',upd,{passive:true});
-addEventListener('resize',layout);
-addEventListener('load',layout);
-layout();
+ var SPEED=1.8;
+ var sec=document.getElementById('cards'),trk=document.getElementById('ctrack');
+ if(!sec||!trk||!trk.firstElementChild)return;
+ var vw=0,tw=0,startX=0,endX=0,distance=0,range=1;
+ function layout(){
+  vw=window.innerWidth;
+  tw=trk.scrollWidth;
+  startX=vw*.12;
+  endX=vw-Math.max(16,vw*.02)-tw;
+  distance=Math.max(0,startX-endX);
+  sec.style.height=Math.max(window.innerHeight+distance/SPEED,window.innerHeight*1.15)+'px';
+  range=Math.max(1,sec.offsetHeight-window.innerHeight);
+  update();
+ }
+ function update(){
+  if(!vw)return;
+  var p=Math.min(1,Math.max(0,-sec.getBoundingClientRect().top/range));
+  trk.style.transform='translate3d('+((startX-p*distance).toFixed(1))+'px,0,0)';
+ }
+ window.addEventListener('scroll',update,{passive:true});
+ window.addEventListener('resize',layout);
+ window.addEventListener('load',layout);
+ requestAnimationFrame(layout);
 })();
 </script>
 <script>
@@ -1127,5 +1129,15 @@ html,body{
 }
 </style>
 
+
+<style>
+/* Keep the hero navigation in the hero; it naturally scrolls away below it. */
+/* A stalled asset/load event must never cover the site or hide the cards. */
+.preloader{display:none!important}
+body.loading{overflow:auto!important}
+body.loading .hero,body.loading .hero:before,body.loading nav .logo,body.loading nav .menu>*,body.loading .org p,body.loading .org .rule,body.loading .title,body.loading .title span,body.loading .title:after,body.loading .desc p,body.loading .desc .rule,body.loading .scroll,body.loading .scroll:after{animation-play-state:running!important}
+html.js .card,html.js .card .info,html.js .card .lg{opacity:1!important;translate:0 0!important;scale:1!important}
+</style>
+<script>document.body.classList.remove('loading');</script>
 </body>
 </html>
