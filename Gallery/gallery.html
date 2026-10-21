@@ -21,7 +21,7 @@ var AR=lang==='ar';
 /* ---------- dictionary (English -> Arabic) ---------- */
 var D={
 /* nav / common */
-'Home':'الرئيسية','Tournaments':'البطولات','Karting':'الكارتينج','Autocross':'الأوتوكروس','Time Attack':'تحدي الوقت','Drift':'الدرفت','Hill Climb':'صعود الهضبة','Baja':'الباها','E-Gaming':'الرياضات الإلكترونية','Calendar':'التقويم','Registration':'التسجيل','Competitor Registration':'تسجيل المتسابقين','Register as a photographer':'التسجيل كمصور','News':'الأخبار','Gallery':'المعرض',
+'Home':'الرئيسية','Results':'النتائج','Race Results':'نتائج السباقات','Live':'مباشر','Live Scores':'النتائج المباشرة','Tournaments':'البطولات','Karting':'الكارتينج','Autocross':'الأوتوكروس','Time Attack':'تحدي الوقت','Drift':'الدرفت','Hill Climb':'صعود الهضبة','Baja':'الباها','E-Gaming':'الرياضات الإلكترونية','Calendar':'التقويم','Registration':'التسجيل','Competitor Registration':'تسجيل المتسابقين','Register as a photographer':'التسجيل كمصور','News':'الأخبار','Gallery':'المعرض',
 'Saudi Toyota Championship':'بطولة السعودية تويوتا',
 'SAUDI':'بطولة','TOYOTA':'السعودية','CHAMPIONSHIP':'تويوتا',
 'Saudi Toyota Championship Karting':'بطولة السعودية تويوتا للكارتينج','Saudi Toyota Championship Autocross':'بطولة السعودية تويوتا للأوتوكروس','Saudi Toyota Championship Time Attack':'بطولة السعودية تويوتا لتحدي الوقت','Saudi Toyota Championship Drift':'بطولة السعودية تويوتا للدرفت','Saudi Toyota Championship Hill Climb':'بطولة السعودية تويوتا لصعود الهضبة','Saudi Toyota Championship Baja':'بطولة السعودية تويوتا للباها','Saudi Toyota Championship E-Gaming':'بطولة السعودية تويوتا للرياضات الإلكترونية',
@@ -734,6 +734,8 @@ html,body{background:#090708}
 <a href="../index.html"><svg viewBox="0 0 24 24"><path d="M5 3v18M5 4h13l-3 4.5 3 4.5H5z"/></svg>Home</a>
 <div class="dd"><a href="../tournaments/karting.html"><svg viewBox="0 0 24 24"><path d="M8 4h8v6a4 4 0 0 1-8 0zM8 6H4v2a3 3 0 0 0 4 3M16 6h4v2a3 3 0 0 1-4 3M12 14v4M8 21h8M9 18h6"/></svg>Tournaments <svg class="ch" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></a><div class="sub"><a href="../tournaments/karting.html">Karting</a><a href="../tournaments/autocross.html">Autocross</a><a href="../tournaments/time-attack.html">Time Attack</a><a href="../tournaments/drift.html">Drift</a><a href="../tournaments/hill-climb.html">Hill Climb</a><a href="../tournaments/baja.html">Baja</a><a href="../tournaments/e-gaming.html">E-Gaming</a></div></div>
 <a href="../calendar.html"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/></svg>Calendar</a>
+<a href="../results.html"><svg viewBox="0 0 24 24"><path d="M3 21h18M9 21V8h6v13M3 21v-8h6M15 21v-5h6M12 3l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z"/></svg>Results</a>
+<a href="../live.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.2"/><path d="M8.1 15.9a5.5 5.5 0 0 1 0-7.8M15.9 8.1a5.5 5.5 0 0 1 0 7.8M5.3 18.7a9.5 9.5 0 0 1 0-13.4M18.7 5.3a9.5 9.5 0 0 1 0 13.4"/></svg>Live</a>
 <div class="dd"><a href="../registration.html"><svg viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/></svg>Registration <svg class="ch" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></svg></a><div class="sub"><a href="../registration.html">Competitor Registration</a><a href="../photographer.html">Register as a photographer</a></div></div>
 <a href="../news.html"><svg viewBox="0 0 24 24"><path d="M3 10v4l11 5V5zM14 8l6-3v14l-6-3M6 15l1.5 5h3"/></svg>News</a>
 <a class="active" href="gallery.html"><svg viewBox="0 0 24 24" style="fill:#e8202e;stroke:none"><path d="M3 8a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/><path d="M10 9.5v5l4.5-2.5z" style="fill:#0b1218"/></svg>Gallery</a>
@@ -752,7 +754,7 @@ html,body{background:#090708}
    <div class="ft"><small>SAUDI</small><strong>TOYOTA</strong><small>CHAMPIONSHIP</small></div>
    <div class="fd">DRIVEN BY<br>A BRIGHTER TOMORROW</div>
   </div>
-  <div class="fcol"><h4><i class="tri"></i>Menu</h4><ul><li><a href="../index.html">Homepage</a></li><li><a href="../tournaments/karting.html">Tournaments</a></li><li><a href="../calendar.html">Event Calendar</a></li></ul></div>
+  <div class="fcol"><h4><i class="tri"></i>Menu</h4><ul><li><a href="../index.html">Homepage</a></li><li><a href="../tournaments/karting.html">Tournaments</a></li><li><a href="../calendar.html">Event Calendar</a></li><li><a href="../results.html">Race Results</a></li><li><a href="../live.html">Live Scores</a></li></ul></div>
   <div class="fcol"><h4><i class="tri"></i>Registration</h4><ul><li><a href="../registration.html">Competitor Registration</a></li><li><a href="../photographer.html">Register as a photographer</a></li><li><a href="../news.html">News and Announcements</a></li></ul></div>
   <div class="vd"></div>
   <div class="flogo" data-img="samf"><div class="samf"><div class="chk-c"></div><div class="ar">الاتحاد السعودي للسيارات والدراجات النارية</div><div class="en">Saudi Automobile &amp; Motorcycle Federation</div></div></div>

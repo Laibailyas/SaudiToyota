@@ -1,3 +1,5 @@
 .dashboard-content/
 .dashboard-uploads/
 __pycache__/
+
+/SaudiToyota-main/**

@@ -33,3 +33,11 @@ The Vercel function limits image uploads to 4 MB. Text and image changes persist
 The dashboard loads editor previews through an authenticated function endpoint, which injects the edit controls even when Vercel serves the public HTML pages as static files.
 
 The backend can also run on another host that supports Python ASGI/FastAPI and outbound HTTPS, using the same Vercel Blob token for persistent storage. For ordinary hosting with a persistent local filesystem, the existing `python server.py` backend can continue to use `.dashboard-content/` and `.dashboard-uploads/` instead.
+
+## Race Scores
+
+The public page is `results.html`. In the dashboard, switch the top bar from **Pages** to **Race Scores** to add, edit, duplicate, hide or delete races and their result rows. Each race has a title, category, round, location, date and status (Final, Provisional or Upcoming). Result rows can be typed in, pasted straight from Excel or Google Sheets, or imported from a CSV file (comma, semicolon or tab separated; headers such as `Pos`, `Car No.`, `Driver`, `Nat.`, `Car`, `Class`, `Group`, `Time`, `Points` are recognised). **Save & publish** stores everything in `.dashboard-content/race-results.json` locally, or in Vercel Blob when deployed, and the page reads it from `/api/results`. Until the first save, the page shows the default races embedded in `results.html`.
+
+## Live Scores
+
+The public page is `live.html`. In the dashboard, choose **Live Scores** in the top bar to add live races, set each race's **Live race link** (the button visitors click to open the live race) and button text, and enter timing per driver: run times (`1:05.483`), penalties (`+2.000`) and `DIS`/`DNF`. Best time, gap to first and gap to previous are calculated automatically; **Auto-rank by best time** fills the positions. Up to three runs are supported, and CSV import/export and pasting from Excel work the same as on Race Scores. Saving stores `live-scores.json` (local folder or Vercel Blob), served from `/api/live`; while a race is marked Live, the public page refreshes every 20 seconds.

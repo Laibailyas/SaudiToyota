@@ -13,7 +13,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from vercel.blob import AsyncBlobClient, BlobError
 
-from server import IMAGE_TYPES, PAGE_PATHS, PAGES, ROOT, UPLOAD_LIMIT
+from server import IMAGE_TYPES, PAGE_PATHS, PAGES, LIVE_NAME, RESULTS_LIMIT, RESULTS_NAME, ROOT, UPLOAD_LIMIT, clean_live, clean_results
 
 logger = logging.getLogger("dashboard")
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -114,6 +114,41 @@ async def api_request(request: Request, route: str):
     route = route.strip("/")
     if request.method == "GET" and route == "dashboard/session":
         return json_response({"authenticated": has_session(request)})
+
+    if request.method == "GET" and route in ("results", "live"):
+        try:
+            content = await read_page_override(f"dashboard-content/{RESULTS_NAME if route == 'results' else LIVE_NAME}")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not read race scores.")
+            return json_response({"error": "Race scores are temporarily unavailable."}, 503)
+        if content is None:
+            return Response(status_code=204, headers={"Cache-Control": "no-store"})
+        return Response(content, media_type="application/json; charset=utf-8", headers={"Cache-Control": "no-store"})
+
+    if request.method == "POST" and route in ("dashboard/results", "dashboard/live"):
+        is_live = route == "dashboard/live"
+        denied = session_required(request)
+        if denied:
+            return denied
+        body = await request.body()
+        if len(body) > RESULTS_LIMIT:
+            return json_response({"error": "Race scores are too large to save."}, 413)
+        try:
+            document = (clean_live if is_live else clean_results)(json.loads(body.decode("utf-8")))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return json_response({"error": "Invalid race scores request."}, 400)
+        except ValueError as error:
+            return json_response({"error": str(error)}, 400)
+        try:
+            await write_blob(
+                f"dashboard-content/{LIVE_NAME if is_live else RESULTS_NAME}",
+                json.dumps(document, ensure_ascii=False).encode("utf-8"),
+                "application/json; charset=utf-8",
+            )
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not save race scores.")
+            return json_response({"error": "Persistent storage could not save the race scores."}, 503)
+        return json_response({"ok": True, "updated": document["updated"]})
 
     if request.method == "GET" and route == "dashboard/pages":
         denied = session_required(request)

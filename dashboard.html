@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Content Dashboard | Saudi Toyota Championship</title>
-  <link rel="stylesheet" href="/dashboard.css">
-  <script src="/dashboard.js?v=2" defer></script>
+  <link rel="stylesheet" href="/dashboard.css?v=3">
+  <script src="/dashboard.js?v=3" defer></script>
+  <script src="/dashboard-results.js?v=2" defer></script>
 </head>
 <body>
   <main id="login-screen" class="login-screen" hidden>
@@ -25,6 +26,11 @@
   <main id="editor-screen" class="editor-screen" hidden>
     <header class="toolbar">
       <a class="brand" href="/">SAUDI <strong>TOYOTA</strong> CHAMPIONSHIP</a>
+      <div class="mode-switch" role="tablist" aria-label="Dashboard section">
+        <button type="button" role="tab" class="on" aria-selected="true" data-mode="pages">Pages</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="scores">Race Scores</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="live">Live Scores</button>
+      </div>
       <div class="toolbar-actions">
         <label class="page-select-label" for="page-select">Page</label>
         <select id="page-select"></select>
@@ -52,6 +58,9 @@
         </div>
       </aside>
     </div>
+
+    <div id="scores-layout" class="scores-layout" data-manager="scores" hidden></div>
+    <div id="live-layout" class="scores-layout" data-manager="live" hidden></div>
   </main>
 </body>
 </html>

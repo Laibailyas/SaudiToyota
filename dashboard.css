@@ -368,3 +368,74 @@ select:focus-visible {
     padding: 18px;
   }
 }
+
+/* ===== Mode switch + Race Scores manager ===== */
+.toolbar { gap: 16px; }
+.mode-switch { display: inline-flex; padding: 4px; gap: 4px; border: 1px solid #26323d; border-radius: 10px; background: #080d12; }
+.mode-switch button { min-height: 34px; border: 0; background: transparent; font-weight: 700; font-size: 13px; }
+.mode-switch button.on { background: #df2635; color: #fff; }
+.scores-mode .toolbar-actions .page-select-label, .scores-mode #page-select { display: none; }
+.scores-layout { display: flex; min-height: 0; flex: 1; }
+.race-side { display: flex; width: 320px; flex: 0 0 320px; flex-direction: column; gap: 14px; padding: 22px; border-right: 1px solid #26323d; background: #0c1219; overflow-y: auto; }
+.field { width: 100%; min-height: 42px; border: 1px solid #35404b; border-radius: 8px; background: #080d12; color: #fff; padding: 0 12px; font: inherit; }
+textarea.field { padding: 10px 12px; resize: vertical; line-height: 1.5; }
+.field:focus-visible, .rows-table input:focus-visible { outline: 2px solid #ef4652; outline-offset: 1px; }
+.race-items { display: grid; gap: 8px; }
+.race-item { display: grid; gap: 4px; width: 100%; min-height: 0; padding: 12px 14px; text-align: left; border: 1px solid #26323d; border-radius: 10px; background: #101820; }
+.race-item strong { font-size: 14px; line-height: 1.35; }
+.race-item span { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: #a9b2bc; font-size: 12px; }
+.race-item.on { border-color: #df2635; background: #1a1115; box-shadow: inset 3px 0 0 #df2635; }
+.race-item .draft { color: #ffc04d; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.final { background: #5ee08f; } .dot.provisional { background: #ffc04d; } .dot.upcoming { background: #9fb4ff; }
+.scores-status { min-height: 1.5em; color: #b4e6c3; font-size: 13px; line-height: 1.5; }
+.scores-status.error { color: #ff8991; }
+.scores-status.dirty { color: #ffc04d; }
+.quiet-link { color: #a9b2bc; font-size: 13px; text-align: center; }
+.race-editor { flex: 1; min-width: 0; overflow-y: auto; padding: 28px clamp(18px, 3vw, 40px) 60px; background: radial-gradient(circle at 90% 0%, #df263514, transparent 40%), #070b10; }
+.race-empty { display: grid; place-items: center; align-content: center; min-height: 60vh; text-align: center; color: #a9b2bc; }
+.race-empty h2 { margin: 0 0 8px; color: #fff; }
+.race-form-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; }
+.race-form-head h2 { margin: 6px 0 0; font-size: 26px; }
+.race-actions, .results-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.danger { border-color: #6b2a31; color: #ff8991; background: transparent; }
+.danger:hover:not(:disabled) { border-color: #ff8991 !important; }
+.race-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 20px; border: 1px solid #26323d; border-radius: 14px; background: #0c1219; }
+.race-grid label { display: grid; gap: 7px; color: #d3d8de; font-size: 13px; font-weight: 700; }
+.race-grid .span-2 { grid-column: span 2; }
+.race-grid .check { display: flex; align-items: center; gap: 10px; align-self: end; min-height: 42px; }
+.race-grid .check input { width: 18px; height: 18px; accent-color: #df2635; }
+.results-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px; margin: 30px 0 14px; }
+.results-head h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 20px; }
+.pill { padding: 3px 10px; border-radius: 99px; background: #df2635; font-size: 12px; }
+.file-btn { position: relative; display: inline-flex; align-items: center; min-height: 42px; padding: 0 14px; border: 1px solid #35404b; border-radius: 8px; background: #141c24; cursor: pointer; }
+.file-btn:hover { border-color: #788694; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.table-shell { position: relative; overflow-x: auto; border: 1px solid #26323d; border-radius: 14px; background: #0c1219; transition: border-color .2s, box-shadow .2s; }
+.table-shell.drag { border-color: #df2635; box-shadow: 0 0 0 3px #df263533; }
+.rows-table { width: 100%; min-width: 1060px; border-collapse: collapse; }
+.rows-table th { padding: 12px 8px; background: #121b24; color: #a9b2bc; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; text-align: left; white-space: nowrap; }
+.rows-table td { padding: 5px 4px; border-top: 1px solid #1b252f; }
+.rows-table tr:hover td { background: #101a23; }
+.rows-table input { width: 100%; min-height: 36px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #fff; padding: 0 8px; font: inherit; font-size: 14px; }
+.rows-table input:hover { border-color: #35404b; }
+.rows-table input:focus { border-color: #df2635; background: #080d12; }
+.rows-table .c-pos { width: 64px; } .rows-table .c-no { width: 80px; } .rows-table .c-nat { width: 72px; } .rows-table .c-sm { width: 90px; }
+.row-acts { display: flex; gap: 4px; padding-right: 6px; }
+.row-acts button { min-height: 32px; width: 32px; padding: 0; border-color: transparent; background: transparent; color: #a9b2bc; font-size: 15px; }
+.row-acts button:hover { border-color: #35404b; color: #fff; }
+.row-acts .del:hover { color: #ff8991; border-color: #6b2a31; }
+.rows-empty { padding: 34px 20px; text-align: center; color: #a9b2bc; font-size: 14px; }
+@media (max-width: 1100px) { .race-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 850px) {
+  .scores-layout { flex-direction: column; overflow-y: auto; }
+  .race-side { width: 100%; flex: 0 0 auto; border-right: 0; border-bottom: 1px solid #26323d; }
+  .race-items { max-height: 260px; overflow-y: auto; }
+  .race-editor { overflow: visible; }
+  .race-grid, .race-grid .span-2 { grid-template-columns: 1fr; grid-column: auto; }
+}
+.rows-table td.calc { padding: 0 10px; color: #b4e6c3; font-weight: 700; font-size: 13px; white-space: nowrap; text-align: right; }
+.rows-table td.calc small { display: block; color: #a9b2bc; font-weight: 500; }
+.scores-mode .toolbar-actions .page-select-label { display: none; }
+.dot.live { background: #ff4d5a; box-shadow: 0 0 8px #ff4d5a; } .dot.finished { background: #a9b2bc; }
+.race-grid .hint { grid-column: 1 / -1; margin: -4px 0 0; }

@@ -51,6 +51,70 @@ IMAGE_TYPES = {
     "image/webp": ".webp",
 }
 UPLOAD_NAME = re.compile(r"^[a-f0-9-]+\.(?:gif|jpg|png|webp)$")
+RESULTS_NAME = "race-results.json"
+RESULTS_LIMIT = 2 * 1024 * 1024
+RACE_FIELDS = ("id", "title", "category", "round", "location", "date", "status", "note")
+RESULT_FIELDS = ("pos", "no", "driver", "nat", "car", "cls", "group", "time", "points")
+RACE_STATUSES = ("final", "provisional", "upcoming")
+
+
+def clean_text(value, limit):
+    if value is None or isinstance(value, (dict, list)):
+        return ""
+    return " ".join(str(value).split())[:limit]
+
+
+LIVE_NAME = "live-scores.json"
+LIVE_RACE_FIELDS = ("id", "title", "category", "round", "location", "date", "status", "note", "url", "link_label")
+LIVE_RESULT_FIELDS = ("pos", "no", "driver", "team", "nat", "car", "cls", "run1", "pen1", "run2", "pen2", "run3", "pen3", "link")
+LIVE_STATUSES = ("live", "upcoming", "finished")
+
+
+def clean_document(data, race_fields, row_fields, statuses):
+    if not isinstance(data, dict) or not isinstance(data.get("races"), list):
+        raise ValueError("Send the scores as a list of races.")
+    if len(data["races"]) > 500:
+        raise ValueError("A maximum of 500 races can be saved.")
+    races, seen = [], set()
+    for race in data["races"]:
+        if not isinstance(race, dict):
+            raise ValueError("Each race must be an object.")
+        item = {key: clean_text(race.get(key), 600 if key in ("note", "url") else 160) for key in race_fields}
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,79}", item["id"]) or item["id"] in seen:
+            raise ValueError("Each race needs a unique id.")
+        seen.add(item["id"])
+        if not item["title"]:
+            raise ValueError("Every race needs a title.")
+        if item["date"] and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", item["date"]):
+            raise ValueError(f"Use the YYYY-MM-DD date format for {item['title']}.")
+        if "url" in item and item["url"] and not re.fullmatch(r"https?://\S+", item["url"]):
+            raise ValueError(f"The live link for {item['title']} must start with https://")
+        if item["status"] not in statuses:
+            item["status"] = statuses[0]
+        item["published"] = race.get("published") is not False
+        rows = race.get("rows") or []
+        if not isinstance(rows, list) or len(rows) > 1000:
+            raise ValueError(f"{item['title']} has too many result rows.")
+        item["rows"] = [
+            {key: clean_text(row.get(key), 600 if key == "link" else 160) for key in row_fields}
+            for row in rows
+            if isinstance(row, dict) and any(clean_text(row.get(key), 160) for key in row_fields)
+        ]
+        for row in item["rows"]:
+            if row.get("link") and not re.fullmatch(r"https?://\S+", row["link"]):
+                raise ValueError(f"Live links in {item['title']} must start with https://")
+        races.append(item)
+    return {"version": 1, "updated": int(time.time()), "races": races}
+
+
+def clean_results(data):
+    """Validate the Race Scores document sent by the dashboard."""
+    return clean_document(data, RACE_FIELDS, RESULT_FIELDS, RACE_STATUSES)
+
+
+def clean_live(data):
+    """Validate the Live Scores document sent by the dashboard."""
+    return clean_document(data, LIVE_RACE_FIELDS, LIVE_RESULT_FIELDS, LIVE_STATUSES)
 
 
 class DashboardHandler(SimpleHTTPRequestHandler):
@@ -158,6 +222,20 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 self.wfile.write(body)
+            elif parsed.path in ("/api/results", "/api/live"):
+                results_path = CONTENT_ROOT / (RESULTS_NAME if parsed.path == "/api/results" else LIVE_NAME)
+                if not results_path.is_file():
+                    self.send_response(204)
+                    self.send_header("Cache-Control", "no-store")
+                    self.end_headers()
+                    return
+                body = results_path.read_bytes()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
             else:
                 self.send_json(404, {"error": "Not found."})
             return
@@ -233,6 +311,10 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 self.handle_save()
             elif parsed.path == "/api/dashboard/upload":
                 self.handle_upload()
+            elif parsed.path == "/api/dashboard/results":
+                self.handle_results()
+            elif parsed.path == "/api/dashboard/live":
+                self.handle_results(LIVE_NAME, clean_live)
             else:
                 self.send_json(404, {"error": "Not found."})
         except OverflowError as error:
@@ -296,6 +378,20 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         finally:
             temporary_path.unlink(missing_ok=True)
         self.send_json(200, {"ok": True})
+
+    def handle_results(self, name=RESULTS_NAME, cleaner=clean_results):
+        if not self.require_session():
+            return
+        document = cleaner(self.read_json(limit=RESULTS_LIMIT))
+        CONTENT_ROOT.mkdir(parents=True, exist_ok=True)
+        file_path = CONTENT_ROOT / name
+        temporary_path = file_path.with_name(f"{file_path.name}.{uuid.uuid4().hex}.tmp")
+        try:
+            temporary_path.write_text(json.dumps(document, ensure_ascii=False), encoding="utf-8")
+            os.replace(temporary_path, file_path)
+        finally:
+            temporary_path.unlink(missing_ok=True)
+        self.send_json(200, {"ok": True, "updated": document["updated"]})
 
     def handle_upload(self):
         if not self.require_session():
