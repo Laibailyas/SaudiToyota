@@ -676,21 +676,71 @@ html[dir=rtl] .na-prog b{font-family:Montserrat,Arial,sans-serif!important}
 </style>
 <style id="nav-narrow">@media(max-width:420px){nav{padding:0 12px!important}.logo{height:38px!important;padding:3px 8px!important}nav a{font-size:12px!important;padding:6px!important;gap:5px!important}nav a svg{width:15px!important;height:15px!important}nav a .ch{display:none}nav a.lang{font-size:13px!important;height:34px!important;padding:0 9px!important;margin-left:4px!important;gap:6px!important}html[dir=rtl] nav a.lang{margin-left:0!important;margin-right:4px!important}}@media(max-width:340px){nav a.active>svg:first-child{display:none}.logo{height:34px!important}}</style>
 <style id="stc-category-brand-hover">
-/* Tournament branding: menu item hover/focus matches its category logo. */
-nav .dd .sub a[href$="karting.html"]{--tournament-link-color:#e8202e}
-nav .dd .sub a[href$="autocross.html"]{--tournament-link-color:#00875a}
-nav .dd .sub a[href$="time-attack.html"]{--tournament-link-color:#e8202e}
-nav .dd .sub a[href$="drift.html"]{--tournament-link-color:#e8202e}
-nav .dd .sub a[href$="hill-climb.html"]{--tournament-link-color:#00875a}
-nav .dd .sub a[href$="baja.html"]{--tournament-link-color:#bb945d}
-nav .dd .sub a[href$="e-gaming.html"]{--tournament-link-color:#e8202e}
-nav .dd .sub a:is(:hover,:focus-visible){
-  color:var(--tournament-link-color,#e8202e)!important;
-  background:#f5f5f5!important;
-  transition:color .2s ease,background-color .2s ease;
-}
-nav .dd .sub a.on[href*="tournaments/"]{color:var(--tournament-link-color,#e8202e)!important}
+/* Explicit category colors overriding global nav hover. */
+nav .dd .sub a[href$="/karting.html"]:hover,
+nav .dd .sub a[href$="/karting.html"]:focus-visible,
+nav .dd .sub a[href$="/karting.html"].on,
+nav .dd .sub a[href="karting.html"]:hover,
+nav .dd .sub a[href="karting.html"]:focus-visible,
+nav .dd .sub a[href="karting.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/autocross.html"]:hover,
+nav .dd .sub a[href$="/autocross.html"]:focus-visible,
+nav .dd .sub a[href$="/autocross.html"].on,
+nav .dd .sub a[href="autocross.html"]:hover,
+nav .dd .sub a[href="autocross.html"]:focus-visible,
+nav .dd .sub a[href="autocross.html"].on{color:#00875A!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/time-attack.html"]:hover,
+nav .dd .sub a[href$="/time-attack.html"]:focus-visible,
+nav .dd .sub a[href$="/time-attack.html"].on,
+nav .dd .sub a[href="time-attack.html"]:hover,
+nav .dd .sub a[href="time-attack.html"]:focus-visible,
+nav .dd .sub a[href="time-attack.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/drift.html"]:hover,
+nav .dd .sub a[href$="/drift.html"]:focus-visible,
+nav .dd .sub a[href$="/drift.html"].on,
+nav .dd .sub a[href="drift.html"]:hover,
+nav .dd .sub a[href="drift.html"]:focus-visible,
+nav .dd .sub a[href="drift.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/hill-climb.html"]:hover,
+nav .dd .sub a[href$="/hill-climb.html"]:focus-visible,
+nav .dd .sub a[href$="/hill-climb.html"].on,
+nav .dd .sub a[href="hill-climb.html"]:hover,
+nav .dd .sub a[href="hill-climb.html"]:focus-visible,
+nav .dd .sub a[href="hill-climb.html"].on{color:#00875A!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/baja.html"]:hover,
+nav .dd .sub a[href$="/baja.html"]:focus-visible,
+nav .dd .sub a[href$="/baja.html"].on,
+nav .dd .sub a[href="baja.html"]:hover,
+nav .dd .sub a[href="baja.html"]:focus-visible,
+nav .dd .sub a[href="baja.html"].on{color:#BB945D!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/e-gaming.html"]:hover,
+nav .dd .sub a[href$="/e-gaming.html"]:focus-visible,
+nav .dd .sub a[href$="/e-gaming.html"].on,
+nav .dd .sub a[href="e-gaming.html"]:hover,
+nav .dd .sub a[href="e-gaming.html"]:focus-visible,
+nav .dd .sub a[href="e-gaming.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
 </style>
+<style id="stc-verified-item-hover">
+nav .dd .sub a[data-stc-hover]{color:#111!important;}
+nav .dd .sub a[data-stc-hover]:is(:hover,:focus-visible,.on){color:var(--stc-brand)!important;background:#f3f3f3!important;}
+nav .dd .sub a[data-stc-hover]:is(:hover,:focus-visible,.on)::before{border-color:var(--stc-brand)!important;color:var(--stc-brand)!important;}
+</style>
+<script id="stc-verified-hover-script">
+document.addEventListener('DOMContentLoaded',function(){
+  const brands = {karting:'#E8202E',autocross:'#00875A','time-attack':'#E8202E',drift:'#E8202E','hill-climb':'#00875A',baja:'#BB945D','e-gaming':'#E8202E'};
+  document.querySelectorAll('nav .dd .sub a').forEach(a=>{
+    const slug = (a.getAttribute('href')||'').split('?')[0].split('/').pop().replace(/\.html$/,'');
+    if(!brands[slug]) return;
+    a.setAttribute('data-stc-hover',slug);
+    a.style.setProperty('--stc-brand',brands[slug]);
+    // Remove generic page-colored .on state from category links unless selected.
+    const active=() => a.matches(':hover,:focus-visible') || a.classList.contains('on');
+    const update=()=>{a.style.setProperty('color', active() ? brands[slug] : '#111','important');a.style.setProperty('background',active() ? '#f3f3f3' : 'transparent','important');};
+    ['pointerenter','pointerleave','focus','blur'].forEach(event=>a.addEventListener(event,update));
+    update();
+  });
+});
+</script>
 </head>
 <body class="loading">
 <div class="preloader" id="preloader" aria-hidden="true">
