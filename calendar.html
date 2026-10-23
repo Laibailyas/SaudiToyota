@@ -307,6 +307,22 @@ html,body{background:#090708}
 .rh,.nh,.rf,.nm,.sched,.cal{background:radial-gradient(circle at 12% 20%,rgba(232,32,46,.085),transparent 30%),radial-gradient(circle at 88% 78%,rgba(120,8,18,.07),transparent 32%),linear-gradient(180deg,#080708 0%,#0c0809 48%,#080708 100%)!important}
 .rh:after,.nh:after,.cal:after,.rf:after,.nm:after,.sched:after{content:"";position:absolute;left:8%;right:8%;bottom:0;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(232,32,46,.22),transparent);opacity:.55}
 </style>
+<style id="stc-category-brand-hover">
+/* Tournament branding: menu item hover/focus matches its category logo. */
+nav .dd .sub a[href$="karting.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a[href$="autocross.html"]{--tournament-link-color:#00875a}
+nav .dd .sub a[href$="time-attack.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a[href$="drift.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a[href$="hill-climb.html"]{--tournament-link-color:#00875a}
+nav .dd .sub a[href$="baja.html"]{--tournament-link-color:#bb945d}
+nav .dd .sub a[href$="e-gaming.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a:is(:hover,:focus-visible){
+  color:var(--tournament-link-color,#e8202e)!important;
+  background:#f5f5f5!important;
+  transition:color .2s ease,background-color .2s ease;
+}
+nav .dd .sub a.on[href*="tournaments/"]{color:var(--tournament-link-color,#e8202e)!important}
+</style>
 </head>
 <body class="loading">
 <div class="preloader" id="preloader" aria-hidden="true">
@@ -576,6 +592,226 @@ document.documentElement.addEventListener('mouseleave',function(){R.classList.re
   }
   requestAnimationFrame(tick);
 })();
+</script>
+<script id="stc-i18n">
+/* ==========================================================
+   STC Language Switcher (English / Arabic)
+   - Remembers choice (localStorage + ?lang= URL param)
+   - Arabic: html[lang=ar][dir=rtl], translates text + attributes,
+     swaps logos, loads Tajawal, applies RTL fixes
+   - Works for content injected later by scripts (MutationObserver)
+   ========================================================== */
+(function(){
+var KEY='stc-lang',html=document.documentElement;
+var q=null;try{q=new URLSearchParams(location.search).get('lang')}catch(e){}
+var saved=null;try{saved=localStorage.getItem(KEY)}catch(e){}
+var lang=(q==='ar'||q==='en')?q:(saved==='ar'?'ar':'en');
+try{localStorage.setItem(KEY,lang)}catch(e){}
+var AR=lang==='ar';
+
+/* ---------- dictionary (English -> Arabic) ---------- */
+var D={
+/* nav / common */
+'Home':'الرئيسية','Results':'النتائج','Race Results':'نتائج السباقات','Live':'مباشر','Live Scores':'النتائج المباشرة','Tournaments':'البطولات','Karting':'الكارتينج','Autocross':'الأوتوكروس','Time Attack':'تحدي الوقت','Drift':'الدرفت','Hill Climb':'صعود الهضبة','Baja':'الباها','E-Gaming':'الرياضات الإلكترونية','Calendar':'التقويم','Registration':'التسجيل','Competitor Registration':'تسجيل المتسابقين','Register as a photographer':'التسجيل كمصور','News':'الأخبار','Gallery':'المعرض',
+'Saudi Toyota Championship':'بطولة السعودية تويوتا',
+'SAUDI':'بطولة','TOYOTA':'السعودية','CHAMPIONSHIP':'تويوتا',
+'Saudi Toyota Championship Karting':'بطولة السعودية تويوتا للكارتينج','Saudi Toyota Championship Autocross':'بطولة السعودية تويوتا للأوتوكروس','Saudi Toyota Championship Time Attack':'بطولة السعودية تويوتا لتحدي الوقت','Saudi Toyota Championship Drift':'بطولة السعودية تويوتا للدرفت','Saudi Toyota Championship Hill Climb':'بطولة السعودية تويوتا لصعود الهضبة','Saudi Toyota Championship Baja':'بطولة السعودية تويوتا للباها','Saudi Toyota Championship E-Gaming':'بطولة السعودية تويوتا للرياضات الإلكترونية',
+'View':'عرض',
+/* partners + footer */
+'OUR PARTNERS':'شركاؤنا','Official':'الشريك','Partner':'الرسمي','Official Partner':'الشريك الرسمي','Strategic Supporter':'الداعم الاستراتيجي','Event Supporter':'داعم الفعالية','Organizers':'المنظمون',
+'Powered by':'مدعومون','Great':'بشراكات','Partnerships':'عظيمة',
+'DRIVEN BY':'ننطلق نحو','A BRIGHTER TOMORROW':'غدٍ أكثر إشراقاً',
+'Menu':'القائمة','Homepage':'الصفحة الرئيسية','Event Calendar':'تقويم الفعاليات','News and Announcements':'الأخبار والإعلانات','All rights reserved © 2026':'جميع الحقوق محفوظة © 2026',
+/* home */
+'organized by the Saudi':'تنظيم الاتحاد السعودي','Automobile and':'للسيارات','Motorcycle Federation':'والدراجات النارية',
+'Saudi Toyota':'بطولة','Championship':'السعودية تويوتا',
+"It's considered the largest motorsport championship in the Kingdom of Saudi Arabia, representing a qualitative shift in the world of local motorsport in terms of diversity, organization, and participation.":'تُعد أكبر بطولة لرياضة المحركات في المملكة العربية السعودية، وتمثل نقلة نوعية في عالم رياضة المحركات المحلية من حيث التنوع والتنظيم والمشاركة.',
+'The championship includes':'تضم البطولة','a diverse range of':'مجموعة متنوعة من','motorsport categories':'فئات رياضة المحركات',
+'The perfect entry point into motorsport, building skills and passion for racing.':'نقطة الانطلاق المثالية إلى عالم رياضة المحركات، لبناء المهارات وشغف السباقات.',
+'Technical tracks, tight corners and pure driving precision.':'مسارات فنية ومنعطفات ضيقة ودقة قيادة خالصة.',
+'Pushing limits to set the fastest times on track.':'تجاوز الحدود لتسجيل أسرع الأزمنة على الحلبة.',
+'Controlled slides, tyre smoke and style, judged on angle and precision.':'انزلاقات محكومة ودخان إطارات وأسلوب، تُقيَّم بالزاوية والدقة.',
+'Winding mountain roads and a race against the clock to the summit.':'طرق جبلية متعرجة وسباق مع الزمن نحو القمة.',
+'Off-Road':'الطرق الوعرة','Rough desert terrain, big jumps and endurance that tests man and machine.':'تضاريس صحراوية وعرة وقفزات كبيرة وقوة تحمّل تختبر الإنسان والآلة.',
+'Esports':'الرياضات الإلكترونية','Sim racing on the virtual grid, where skill and reflexes decide the winner.':'سباقات المحاكاة على الحلبة الافتراضية، حيث تحسم المهارة وسرعة البديهة هوية الفائز.',
+/* tournament pages */
+'A speed race on a cone marked circuit where drivers aim to reach the finish line in the shortest time. Competitors must stay on track while following all race and safety rules.':'سباق سرعة على حلبة محددة بالأقماع، يسعى فيه السائقون إلى الوصول إلى خط النهاية في أقصر وقت ممكن، مع التزام المتسابقين بالبقاء على المسار واتباع جميع قواعد السباق والسلامة.',
+'A prominent local rally championship promoting motorsport in Saudi Arabia. Features elite drivers competing across diverse desert terrains. Includes four rounds held across different regions of the Kingdom. Combines technical challenges, speed, and disciplined driving. A long distance Baja style rally held across several days. Each event offers unique challenges across diverse desert environments.':'بطولة رالي محلية بارزة تعزز رياضة المحركات في المملكة العربية السعودية، يتنافس فيها نخبة السائقين عبر تضاريس صحراوية متنوعة. تضم أربع جولات تُقام في مناطق مختلفة من المملكة، وتجمع بين التحديات الفنية والسرعة والقيادة المنضبطة. وهي رالي طويل المسافة على طراز الباها يمتد لعدة أيام، وتقدم كل فعالية تحديات فريدة في بيئات صحراوية متنوعة.',
+'A motorsport where drivers slide the car sideways through corners while maintaining speed, precision, and control. Competitors are judged on their drifting skills and maneuvering during solo or tandem runs.':'رياضة محركات ينزلق فيها السائقون بالسيارة جانبياً عبر المنعطفات مع الحفاظ على السرعة والدقة والتحكم، ويُقيَّم المتسابقون على مهاراتهم في الانزلاق والمناورة خلال الجولات الفردية أو الثنائية.',
+'A digital motorsport competition featuring realistic virtual racing. Focuses on driving skill, precision, strategy, and consistency. Aims to discover new talent and expand motorsport participation across Saudi Arabia.':'منافسة رقمية في رياضة المحركات تقدم سباقات افتراضية واقعية، وتركز على مهارة القيادة والدقة والاستراتيجية والثبات، وتهدف إلى اكتشاف المواهب الجديدة وتوسيع المشاركة في رياضة المحركات في أنحاء المملكة العربية السعودية.',
+'A premier hill climb racing event in the Kingdom. Held in Taif on a challenging 4.2 km uphill course. Features technical corners and high speed sections for skilled drivers. Attracts 150+ competitors across 10 vehicle categories.':'أبرز سباقات صعود الهضبة في المملكة، يُقام في الطائف على مسار صاعد مليء بالتحديات بطول 4.2 كم، ويضم منعطفات فنية ومقاطع عالية السرعة للسائقين المهرة، ويستقطب أكثر من 150 متسابقاً في 10 فئات من المركبات.',
+'Karting develops driving skills, focus, and fitness, serving as a gateway to Formula 1. The Saudi Toyota Championship Karting nurtures talent through three competitive rounds in Riyadh.':'تنمّي رياضة الكارتينج مهارات القيادة والتركيز واللياقة البدنية، وتُعد بوابة العبور نحو الفورمولا 1. وتحتضن بطولة السعودية تويوتا للكارتينج المواهب من خلال ثلاث جولات تنافسية في الرياض.',
+'An individual race where competitors aim to complete a defined circuit in the fastest time. Success depends on precise driving, control, and following the designated route and safety rules.':'سباق فردي يسعى فيه المتسابقون إلى إكمال حلبة محددة في أسرع وقت، ويعتمد النجاح فيه على دقة القيادة والتحكم والالتزام بالمسار المحدد وقواعد السلامة.',
+/* calendar */
+'Event':'الفعالية','Date':'التاريخ','Type':'النوع','All':'الكل','E-Games':'الألعاب الإلكترونية','Local Rally':'الرالي المحلي',
+'Hail Rally':'رالي حائل','Jeddah Rally':'رالي جدة','Qassim Rally':'رالي القصيم','Final Round':'الجولة النهائية','Jeddah Round':'جولة جدة',
+'There are no events currently scheduled for this type.':'لا توجد فعاليات مجدولة حالياً لهذا النوع.',
+/* gallery */
+'Video Gallery':'معرض الفيديو','Previous video':'الفيديو السابق','Next video':'الفيديو التالي','Close':'إغلاق','Watch on YouTube':'شاهد على يوتيوب',
+/* news */
+'News Room':'الأخبار','&':'و','Announcements':'الإعلانات','Latest':'الأحدث','Details':'التفاصيل',
+'SAMF Awards 2025 ceremony stage':'منصة حفل جوائز الاتحاد السعودي للسيارات والدراجات النارية 2025',
+'The Saudi Arabian Federation of Automobiles and Motorcycles Awards ceremony will honor the champions of the 2025 season':'حفل جوائز الاتحاد السعودي للسيارات والدراجات النارية يكرّم أبطال موسم 2025',
+'Rally buggy racing through the desert':'سيارة رالي تنطلق عبر الصحراء',
+'Tabuk Round Cancelled as Saudi Toyota Rally Championship Moves Forward with Three-Round Season':'إلغاء جولة تبوك ومواصلة بطولة السعودية تويوتا للراليات بموسم من ثلاث جولات',
+'Following cancellation of Tabuk Baja, the championship continues with three competitive rounds across Hail, Qassim, and Jeddah':'بعد إلغاء باها تبوك، تتواصل البطولة بثلاث جولات تنافسية في حائل والقصيم وجدة',
+'The Saudi Automobile and Motorcycle Federation (SAMF) has issued a revised calendar for the 2025 Saudi Toyota Rally Championship after confirming the cancellation of the Tabuk Toyota Baja. Initially scheduled as the second round of the season from 7 to 10 May, the...':'أصدر الاتحاد السعودي للسيارات والدراجات النارية تقويماً معدّلاً لبطولة السعودية تويوتا للراليات 2025 بعد تأكيد إلغاء باها تويوتا تبوك، التي كان من المقرر إقامتها كجولة ثانية من الموسم في الفترة من 7 إلى 10 مايو...',
+'Quad bike rider at the Toyota rally gate':'متسابق دراجة رباعية عند بوابة رالي تويوتا',
+'Postponement of the Tabuk Toyota Rally 2025':'تأجيل رالي تويوتا تبوك 2025',
+'The Tabuk Toyota Rally, the second round of the Saudi Toyota Championship Rallies, which was scheduled to take place from May 7 to 10, has been postponed. This decision was made following discussions with the championship’s partners, which concluded that the event...':'تقرر تأجيل رالي تويوتا تبوك، الجولة الثانية من بطولة السعودية تويوتا للراليات، والذي كان من المقرر إقامته في الفترة من 7 إلى 10 مايو، وجاء هذا القرار بعد مناقشات مع شركاء البطولة خلصت إلى أن الفعالية...',
+/* photographer + registration (shared) */
+'Register as a Photographer':'التسجيل كمصور','Terms':'الشروط','Photography':'التصوير','Confirm':'التأكيد',
+'Terms and Conditions':'الشروط والأحكام','Please read the terms below carefully before you register.':'يرجى قراءة الشروط أدناه بعناية قبل التسجيل.',
+'Registration is not available for individuals under 18 years of age.':'التسجيل غير متاح لمن تقل أعمارهم عن 18 عاماً.',
+'Mobile phone photography is prohibited in the photographers’ area surrounding the track; only professional cameras are allowed.':'يُمنع التصوير بالهاتف المحمول في منطقة المصورين المحيطة بالحلبة، ويُسمح فقط بالكاميرات الاحترافية.',
+'I commit to fully comply with the instructions of the race organizers both inside and outside the track.':'ألتزم بالامتثال التام لتعليمات منظمي السباق داخل الحلبة وخارجها.',
+'I acknowledge that I must submit all photographed content from the Saudi Toyota Championship to the Saudi Automobile & Motorcycle Federation via email at:':'أقرّ بأنه يجب عليّ تسليم جميع المحتوى المصوَّر من بطولة السعودية تويوتا إلى الاتحاد السعودي للسيارات والدراجات النارية عبر البريد الإلكتروني:',
+'I acknowledge and pledge not to use drones (unmanned aerial vehicles) without obtaining official permission from the General Authority of Civil Aviation. If permission is granted, I undertake to provide a copy of the permit to the Saudi Automobile & Motorcycle Federation.':'أقرّ وأتعهد بعدم استخدام الطائرات المسيّرة (الطائرات بدون طيار) دون الحصول على تصريح رسمي من الهيئة العامة للطيران المدني، وفي حال منح التصريح أتعهد بتقديم نسخة منه إلى الاتحاد السعودي للسيارات والدراجات النارية.',
+'I fully understand that the Federation is not responsible for any legal or security consequences resulting from the unauthorized use of drones.':'أدرك تماماً أن الاتحاد غير مسؤول عن أي تبعات قانونية أو أمنية ناتجة عن الاستخدام غير المصرّح به للطائرات المسيّرة.',
+'I acknowledge that I am fully aware of the registration times, and the process for collecting the entry permit and safety vest.':'أقرّ بأنني على علم تام بمواعيد التسجيل وآلية استلام تصريح الدخول وسترة السلامة.',
+'I understand that no registration requests will be accepted after the deadline announced on the official Saudi Toyota Championship website and its social media channels.':'أدرك أنه لن يتم قبول أي طلبات تسجيل بعد الموعد النهائي المعلن على الموقع الرسمي لبطولة السعودية تويوتا وحساباتها على وسائل التواصل الاجتماعي.',
+'I acknowledge that I must collect the entry permit and safety vest on the first day of the championship.':'أقرّ بأنه يجب عليّ استلام تصريح الدخول وسترة السلامة في اليوم الأول من البطولة.',
+'Your Details':'بياناتك','Tell us who you are and how to reach you.':'أخبرنا من أنت وكيف يمكننا التواصل معك.',
+'Full Name':'الاسم الكامل','E-mail Address':'البريد الإلكتروني','Mobile Number':'رقم الجوال','Age':'العمر','Gender':'الجنس','Male':'ذكر','Female':'أنثى','Region':'المنطقة',
+'Photography Details':'تفاصيل التصوير','Your affiliation, equipment and experience.':'جهة انتمائك ومعداتك وخبرتك.',
+'Affiliated Entity':'الجهة التابع لها','Media Organization':'مؤسسة إعلامية','Racer or Team':'متسابق أو فريق','Amateur Photographer':'مصور هاوٍ',
+'If affiliated with a media organization, please specify':'إذا كنت تابعاً لمؤسسة إعلامية، يرجى تحديدها',
+'Type of Photography':'نوع التصوير','Professional camera required (mobile phone not allowed).':'يلزم استخدام كاميرا احترافية (لا يُسمح بالهاتف المحمول).',
+'Photo':'صور','Video':'فيديو','The type of camera used':'نوع الكاميرا المستخدمة','Years of experience as a photographer':'سنوات الخبرة في التصوير','URL Link to your active social media account':'رابط حسابك النشط على وسائل التواصل الاجتماعي',
+'Confirm and Submit':'التأكيد والإرسال','Review your details and confirm to submit.':'راجع بياناتك ثم أكّد لإرسالها.',
+'I confirm that I have read and agree to all the terms and obligations above.':'أؤكد أنني قرأت جميع الشروط والالتزامات أعلاه وأوافق عليها.',
+'I also confirm that all the information provided is accurate, and I take full responsibility in case of any false or misleading information.':'كما أؤكد أن جميع المعلومات المقدمة صحيحة، وأتحمل المسؤولية الكاملة في حال وجود أي معلومات خاطئة أو مضللة.',
+'Back':'رجوع','Continue':'متابعة','I Understand, Continue':'فهمت، متابعة','Submit Registration':'إرسال التسجيل','Edit':'تعديل','Total':'الإجمالي',
+'Thank you. Your photographer registration has been submitted.':'شكراً لك. تم إرسال طلب تسجيلك كمصور.','Reference':'الرقم المرجعي','Back to homepage':'العودة إلى الصفحة الرئيسية',
+'This field is required.':'هذا الحقل مطلوب.','Enter a valid e-mail address.':'يرجى إدخال بريد إلكتروني صحيح.','Enter a valid URL, starting with https://':'يرجى إدخال رابط صحيح يبدأ بـ https://',
+'Please accept the declarations to continue.':'يرجى الموافقة على الإقرارات للمتابعة.','Please check this value.':'يرجى التحقق من هذه القيمة.','Please enter a valid value.':'يرجى إدخال قيمة صحيحة.',
+'Please select an option.':'يرجى اختيار أحد الخيارات.','Please select at least one option.':'يرجى اختيار خيار واحد على الأقل.','Please choose an option.':'يرجى اختيار أحد الخيارات.','Please upload a file.':'يرجى رفع ملف.',
+'Notes :':'ملاحظات :','Registration is for the':'التسجيل مخصص لـ','Hill Climb Championship — Round Three.':'بطولة صعود الهضبة — الجولة الثالثة.','The deadline for registration is':'آخر موعد للتسجيل هو','July 29, 2026 — at 15:00':'29 يوليو 2026 — الساعة 15:00',
+'Competitor':'المتسابق','Vehicle':'المركبة','Rounds':'الجولات',
+'Competitor Information':'بيانات المتسابق','Personal, licence and bank details.':'البيانات الشخصية وبيانات الرخصة والحساب البنكي.',
+'Full Name (Arabic)':'الاسم الكامل (بالعربية)','Full Name (English)':'الاسم الكامل (بالإنجليزية)','Nationality':'الجنسية','ID / Iqama Number':'رقم الهوية / الإقامة','Blood Type':'فصيلة الدم','—Please choose an option—':'—يرجى اختيار أحد الخيارات—',
+'Competition License Number':'رقم رخصة المنافسة','Issuing ASN / Federation':'الاتحاد / الهيئة الوطنية المُصدِرة',
+'Upload No Objection Letter (International Participants Only)':'رفع خطاب عدم ممانعة (للمشاركين الدوليين فقط)',
+'Choose file':'اختر ملفاً','No file chosen':'لم يتم اختيار ملف','Acceptable files ( pdf ⋅ jpg ⋅ jpeg ⋅ png )':'الملفات المقبولة ( pdf ⋅ jpg ⋅ jpeg ⋅ png )','Maximum file size 5 MB':'الحد الأقصى لحجم الملف 5 ميجابايت',
+'Emergency Contact Name':'اسم جهة الاتصال للطوارئ','Emergency Contact Number':'رقم جهة الاتصال للطوارئ','Bank Name':'اسم البنك','IBAN Number':'رقم الآيبان','Upload IBAN Certificate':'رفع شهادة الآيبان',
+'Vehicle Information':'بيانات المركبة','The vehicle you will compete with.':'المركبة التي ستشارك بها في المنافسة.',
+'Vehicle Make':'الشركة المصنّعة','Vehicle Model':'طراز المركبة','Year of Manufacture':'سنة الصنع','Plate Number':'رقم اللوحة','Vehicle Color':'لون المركبة','PF Number':'رقم PF','FIA PF-ID Certificate Number':'رقم شهادة FIA PF-ID','Upload PF Certificate':'رفع شهادة PF',
+'Registration Options':'خيارات التسجيل','Choose how many rounds you want to enter.':'اختر عدد الجولات التي ترغب في المشاركة بها.','Choose Number of Rounds':'اختر عدد الجولات',
+'Registration for the first round only':'التسجيل في الجولة الأولى فقط','Registration for all three rounds':'التسجيل في الجولات الثلاث',
+'Declarations':'الإقرارات','I confirm that all submitted information is correct.':'أؤكد أن جميع المعلومات المقدمة صحيحة.',
+'I have read and accepted the Saudi Toyota Hill Climb Championship 2026 Regulations.':'قرأت لوائح بطولة السعودية تويوتا لصعود الهضبة 2026 ووافقت عليها.',
+'Thank you. Your registration details have been submitted.':'شكراً لك. تم إرسال بيانات تسجيلك.',
+/* karting hero */
+'AUTOCROSS':'الأوتوكروس','RACE':'سابِق','THE CLOCK.':'الزمن.','MASTER THE COURSE.':'وأتقن المسار.',
+'Navigate a cone-marked circuit with speed, precision, and complete control.':'انطلق عبر حلبة محددة بالأقماع بسرعة ودقة وتحكم كامل.',
+'Discover Autocross':'اكتشف الأوتوكروس','Built for precision':'صُمّم للدقة','Speed through every turn.':'انطلق بسرعة في كل منعطف.','Stay within the course.':'التزم بحدود المسار.','Set your fastest time.':'سجّل أسرع أزمنتك.','Explore':'استكشف','A Saudi Toyota Championship discipline':'إحدى فئات بطولة السعودية تويوتا','Drift is one of the Saudi Toyota Championship’s disciplines. Drivers hold a controlled sideways slide through a designated course and are judged on drifting skill, maneuvering, speed, and control.':'الدرفت اختبار للسرعة والدقة والتحكم بالسيارة. يدفع السائقون السيارة عمداً إلى الانزلاق الخلفي، محافظين على انزلاق مُتحكَّم به في كل منعطف.','Control the Slide':'تحكّم بالانزلاق','Hold a controlled slide while maintaining speed and car control.':'حافظ على انزلاق متحكَّم به مع الحفاظ على السرعة والتحكم بالسيارة.','Master the Angle':'أتقن الزاوية','Balance steering and throttle to carry the car through each turn.':'وازن بين التوجيه ودواسة الوقود لاجتياز كل منعطف.','Tandem Competition':'منافسة ثنائية','Drivers demonstrate their speed and control in one or two tandem runs.':'يُظهر السائقون سرعتهم وتحكمهم في جولة أو جولتين ثنائيتين.','Drift Angle':'زاوية الدرفت','Tandem':'ثنائي','Entry':'الدخول','Apex':'القمة','Exit':'الخروج','Drifting':'الدرفت','Slide with speed. Control the angle.':'انزلق بسرعة. تحكّم بالزاوية.','Master every corner.':'أتقن كل منعطف.','Explore Drifting':'استكشف الدرفت','Hold to drift':'اضغط مطولاً للدرفت','Drift Score':'نقاط الدرفت','Angle':'الزاوية','Toyota GR Supra drifting through a corner at night with tyre smoke':'تويوتا GR سوبرا تنجرف عبر منعطف ليلاً مع دخان الإطارات','The Autocross Experience':'تجربة الأوتوكروس','Autocross is a test of speed, precision, and control. Drivers take on a defined circuit and aim to complete every section in the fastest possible time while staying on the designated route and following all safety rules.':'الأوتوكروس اختبار للسرعة والدقة والتحكم. يخوض السائقون حلبة محددة ويسعون لإنهاء كل قسم منها في أسرع وقت ممكن، مع البقاء على المسار المحدد والالتزام بجميع قواعد السلامة.','Fastest Time':'أسرع زمن','The winner is determined by the best recorded time.':'يُحدَّد الفائز بأفضل زمن مسجّل.','Precision Control':'تحكّم دقيق','Every turn demands accuracy, balance, and driving skill.':'كل منعطف يتطلب الدقة والتوازن ومهارة القيادة.','No Overtaking':'بلا تجاوز','The competition is decided by timing, not starting position.':'تُحسم المنافسة بالتوقيت لا بمركز الانطلاق.','Lap Time':'زمن اللفة','Hold to boost':'اضغط مطولاً للتسارع','Lap':'اللفة','Best':'الأفضل','Delta':'الفارق','New Best':'رقم قياسي جديد','km/h':'كم/س','A race against the clock where precision, control, and driving skill decide every second.':'سباق مع الزمن، تحسم فيه الدقة والتحكم ومهارة القيادة كل ثانية.','Explore Category':'استكشف الفئة','Dark Toyota GR Supra on a wet, cone-marked course at night':'تويوتا GR سوبرا سوداء على مسار مبلل محدد بالأقماع ليلاً','Finish':'النهاية','Autocross is a test of speed, control, and accuracy. Drivers take on a cone marked course and race against the clock, where every corner and every second counts.':'الأوتوكروس اختبار للسرعة والتحكم والدقة. يخوض السائقون مساراً محدداً بالأقماع ويتسابقون مع الزمن، حيث يصنع كل منعطف وكل ثانية الفارق.','Against the Clock':'في مواجهة الزمن','Every second can decide the result.':'كل ثانية قد تحسم النتيجة.','Precision Driving':'قيادة دقيقة','Navigate every turn without losing momentum.':'اجتز كل منعطف دون أن تفقد الزخم.','Toyota Performance':'أداء تويوتا','Put your Toyota and driving skills to the ultimate test.':'ضع سيارتك تويوتا ومهاراتك في القيادة أمام الاختبار الأقوى.','A battle against the clock where every turn matters.':'سباق مع الزمن، كل منعطف فيه يصنع الفارق.','Push your Toyota through the course and chase the fastest time.':'انطلق بسيارتك تويوتا عبر المسار وطارد أسرع زمن.','Explore the Championship':'استكشف البطولة','Scroll':'مرّر','Toyota GR Corolla on the autocross course':'تويوتا GR كورولا على مسار الأوتوكروس','Speed':'السرعة','Control':'التحكم','Precision':'الدقة','Every Second':'كل ثانية','Counts.':'تصنع الفارق.','Autocross is a speed race on a cone-marked circuit where drivers compete to reach the finish line in the shortest possible time. Every turn demands accuracy, control, and quick reactions while competitors remain on course and follow all race and safety regulations.':'الأوتوكروس سباق سرعة على حلبة محددة بالأقماع، يتنافس فيه السائقون للوصول إلى خط النهاية في أقصر وقت ممكن. كل منعطف يتطلب الدقة والتحكم وسرعة رد الفعل، مع بقاء المتسابقين على المسار والتزامهم بجميع قواعد السباق والسلامة.','One course. One clock. Your fastest run wins.':'مسار واحد. ساعة واحدة. أسرع جولة هي الفائزة.','Fastest Run':'أسرع جولة','Track Control':'التحكم بالمسار','Corner Precision':'دقة المنعطفات','Run Time':'زمن الجولة','Live':'مباشر','Technical Circuit':'حلبة فنية','Toyota GR kart cornering at night':'كارت تويوتا GR ينعطف ليلاً',"Driver's view from the kart cockpit":'منظر السائق من مقصورة الكارت','Tap to rev':'اضغط لتشغيل المحرك','Toyota GR kart on a wet track':'كارت تويوتا GR على حلبة مبللة'
+};
+/* context-specific wording (selector -> {en:ar}) where word order differs */
+var CTX=[['.ok h2',{'Registration':'تم استلام','received':'طلبك'}],['.tc h2',{'Race Against':'سباق','The Clock':'مع الزمن'}],['.ds h2',{'Speed.':'السرعة.','Angle.':'الزاوية.','Control.':'التحكم.'}],['.as',{'Speed':'السرعة','Meets':'تلتقي','Precision':'بالدقة'}],['.ah',{'Saudi Toyota Championship':'بطولة السعودية تويوتا','Saudi Toyota':'السعودية تويوتا','Autocross':'أوتوكروس'}]];
+var MON={JAN:'يناير',FEB:'فبراير',MAR:'مارس',APR:'أبريل',MAY:'مايو',JUN:'يونيو',JUL:'يوليو',AUG:'أغسطس',SEP:'سبتمبر',OCT:'أكتوبر',NOV:'نوفمبر',DEC:'ديسمبر'};
+var RULES=[
+ [/^Step (\d+) \/ (\d+)$/,'الخطوة $1 / $2'],
+ [/^Step (\d+) of (\d+)$/,'الخطوة $1 من $2'],
+ [/^Round (\d+)$/,'الجولة $1'],
+ [/^Al-Ahsa Round (\d+)$/,'جولة الأحساء $1'],
+ [/^(\d[\d,]*) SAR$/,'$1 ريال'],
+ [/^Video (\d+)$/,'فيديو $1'],
+ [/^Slide (\d+)$/,'الشريحة $1'],
+ [/^(\d{1,2}) (JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC) (\d{2,4})$/,function(m,d,mo,y){return d+' '+MON[mo]+' '+y}],
+ [/^(.+) Highlights$/,function(m,x){return 'أبرز لقطات '+(D[x]||x)}]
+];
+function tr(s,el){
+ if(s==null)return null;var k=String(s).replace(/\s+/g,' ').trim();if(!k)return null;
+ if(el&&el.closest)for(var c=0;c<CTX.length;c++){if(el.closest(CTX[c][0])&&CTX[c][1].hasOwnProperty(k))return CTX[c][1][k]}
+ if(D.hasOwnProperty(k))return D[k];
+ for(var i=0;i<RULES.length;i++){if(RULES[i][0].test(k))return k.replace(RULES[i][0],RULES[i][1])}
+ if(k.indexOf(' | ')>0){var p=k.split(' | '),ch=0;p=p.map(function(x){var t=tr(x);if(t!=null){ch=1;return t}return x});if(ch)return p.join(' | ')}
+ return null;
+}
+window.STC_I18N={lang:lang,ar:AR,tr:function(s){var t=AR?tr(s):null;return t==null?s:t},set:setLang};
+
+function setLang(n){
+ try{localStorage.setItem(KEY,n)}catch(e){}
+ var u;try{u=new URL(location.href);u.searchParams.set('lang',n);location.href=u.href}catch(e){location.reload()}
+}
+/* language button (capture so no other handler swallows it) */
+document.addEventListener('click',function(e){
+ var a=e.target&&e.target.closest&&e.target.closest('a.lang');if(!a)return;
+ e.preventDefault();e.stopPropagation();setLang(AR?'en':'ar');
+},true);
+
+/* keep ?lang= on internal page links (works on file:// and in iframes too) */
+function fixLink(a){
+ var h=a.getAttribute('href');if(!h||!/\.html(\?|#|$)/i.test(h)||/^(https?:|mailto:|tel:)/i.test(h))return;
+ var hash='',i=h.indexOf('#');if(i>=0){hash=h.slice(i);h=h.slice(0,i)}
+ var o=a.getAttribute('href');h=h.replace(/([?&])lang=(ar|en)&?/,'$1').replace(/[?&]$/,'');
+ var nh=h+(h.indexOf('?')>=0?'&':'?')+'lang='+lang+hash;if(nh!==o)a.setAttribute('href',nh);
+}
+
+var SKIP='script,style,noscript,textarea,code,.wm,.samf,[data-noi18n]';
+var ATTRS=['alt','placeholder','aria-label','title'];
+var arLogo=null;
+function swapLogo(img){
+ if(img.classList.contains('logo')){
+  if(img.dataset.arSrc&&!arLogo)arLogo=img.dataset.arSrc;
+  if(AR&&img.dataset.arSrc&&img.getAttribute('src')!==img.dataset.arSrc)img.src=img.dataset.arSrc;
+ }else if(AR&&img.closest('.kt-logo')&&!img.dataset.i18nDone){
+  var lg=document.querySelector('nav img.logo');var u=arLogo||(lg&&lg.dataset.arSrc);
+  if(u){img.dataset.i18nDone=1;img.src=u;var box=img.closest('.kt-logo');
+   if(!box.querySelector('.kt-lab')){var k=(document.body&&document.body.dataset.cat)||(img.getAttribute('alt')||'').replace('Saudi Toyota Championship','').trim();
+    if(k){var s=document.createElement('span');s.className='kt-lab';s.textContent=k;box.appendChild(s)}}}
+ }
+}
+function doEl(el){
+ if(el.nodeType!==1)return;
+ var tag=el.tagName;
+ if(tag==='IMG')swapLogo(el);
+ if(tag==='A')fixLink(el);
+ if(!AR)return;
+ if(el.classList.contains('lang')&&tag==='A'){if(!el.dataset.i18nDone){el.dataset.i18nDone=1;el.innerHTML='English';el.setAttribute('lang','en');el.setAttribute('dir','ltr')}return}
+ if(el.classList.contains('lgi')&&!el.dataset.i18nDone){var lg=document.querySelector('nav img.logo');var u=arLogo||(lg&&lg.dataset.arSrc);if(u){el.dataset.i18nDone=1;el.style.backgroundImage='url("'+u+'")'}}
+ if(el.closest(SKIP))return;
+ for(var i=0;i<ATTRS.length;i++){var v=el.getAttribute(ATTRS[i]);if(v){var t=tr(v,el);if(t!=null&&t!==v)el.setAttribute(ATTRS[i],t)}}
+}
+function doText(n){
+ if(!AR)return;var p=n.parentNode;if(!p||p.nodeType!==1||p.closest(SKIP))return;
+ if(p.closest('a.lang'))return;
+ var v=n.nodeValue,t=tr(v,p);if(t==null)return;
+ var lead=v.match(/^\s*/)[0],trail=v.match(/\s*$/)[0],nv=lead+t+trail;if(nv!==v)n.nodeValue=nv;
+}
+function walk(root){
+ if(!root)return;
+ if(root.nodeType===3){doText(root);return}
+ if(root.nodeType!==1&&root.nodeType!==9)return;
+ if(root.nodeType===1){doEl(root);if(root.tagName==='SCRIPT'||root.tagName==='STYLE')return}
+ var w=document.createTreeWalker(root,5,null),n;
+ while((n=w.nextNode())){if(n.nodeType===3)doText(n);else doEl(n)}
+}
+
+if(AR){
+ html.setAttribute('lang','ar');html.setAttribute('dir','rtl');html.classList.add('ar');
+ var t=tr(document.title);if(t)document.title=t;
+ var lk=document.createElement('link');lk.rel='stylesheet';lk.href='https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap';document.head.appendChild(lk);
+ var st=document.createElement('style');st.id='stc-rtl';st.textContent="/* ===== Arabic / RTL overrides (only active when html[dir=rtl]) ===== */\nhtml[dir=rtl] body,html[dir=rtl] body *:not(svg):not(path){font-family:'Tajawal',Inter,Arial,sans-serif!important;letter-spacing:0!important}\nhtml[dir=rtl] em,html[dir=rtl] i,html[dir=rtl] .cat,html[dir=rtl] .ph .l1{font-style:normal}\nhtml[dir=rtl] .wm,html[dir=rtl] .samf,html[dir=rtl] .wm *,html[dir=rtl] .samf *{font-family:inherit}\nhtml[dir=rtl] input[type=email],html[dir=rtl] input[type=url],html[dir=rtl] input[name*=mail],html[dir=rtl] input[placeholder^=\"https\"]{direction:ltr;text-align:right}\n\n/* nav */\nhtml[dir=rtl] nav a.lang{margin-left:0;margin-right:.8vw;font-family:Inter,Arial,sans-serif!important;font-weight:600}\nhtml[dir=rtl] nav a .ch{margin-left:0;margin-right:-.05vw}\nhtml[dir=rtl] nav .dd .sub{left:auto;right:0}\nhtml[dir=rtl] nav .dd .sub a:before{transform:rotate(-135deg)}\nhtml[dir=rtl] nav a.active:after{background:linear-gradient(270deg,#ffffff 55%,rgba(255,255,255,0))}\nhtml[dir=rtl] nav a{font-size:1vw}\n\n/* home hero (mirrored) */\nhtml[dir=rtl] .org{left:auto;right:4.6vw}\nhtml[dir=rtl] .title{left:auto;right:4.6vw;text-align:right;-webkit-text-stroke:0;font-weight:800;line-height:1.15}\nhtml[dir=rtl] .desc{left:3.1vw}\nhtml[dir=rtl] .org p{font-size:1.25vw;line-height:1.45}\nhtml[dir=rtl] .desc p{font-size:1.15vw;line-height:1.6}\n\n/* home: horizontal cards keep their scroll mechanics */\nhtml[dir=rtl] .ctrack{direction:ltr}\nhtml[dir=rtl] .ctrack .card{direction:rtl}\nhtml[dir=rtl] .lg{right:auto;left:5cqw;align-items:flex-start}\nhtml[dir=rtl] .info h3{font-weight:800;line-height:1.25}\nhtml[dir=rtl] .info p{line-height:1.55}\nhtml[dir=rtl] #rt{line-height:1.35}\n\n/* partners */\nhtml[dir=rtl] .ph{line-height:1.35}\nhtml[dir=rtl] .ph .l2{font-weight:800}\nhtml[dir=rtl] .ptop{padding-left:0}\n\n/* footer */\nhtml[dir=rtl] .fmain{text-align:right}\nhtml[dir=rtl] .ft{left:auto;right:6%}\nhtml[dir=rtl] .ft small{font-size:1.05vw}\nhtml[dir=rtl] .ft strong{font-size:2.8vw;font-weight:800;line-height:1.3}\nhtml[dir=rtl] .fd{left:auto;right:6%;font-size:1.15vw;line-height:1.7}\nhtml[dir=rtl] .tri{clip-path:polygon(0 0,0 100%,100% 100%)}\nhtml[dir=rtl] .fcol a:before{transform:rotate(-135deg);margin-right:0;margin-left:.2vw}\n\n@media(max-width:1000px){\n html[dir=rtl] nav a.lang{margin-right:8px;margin-left:0}\n html[dir=rtl] nav a{font-size:13px}\n html[dir=rtl] .title{left:auto;right:18px}\n html[dir=rtl] .ft small{font-size:13px}html[dir=rtl] .ft strong{font-size:32px}html[dir=rtl] .fd{font-size:14px}\n}\nhtml[dir=rtl] .cards .pin{direction:ltr}\nhtml[dir=rtl] .ft small{font-size:1.3vw}\n/* forms (registration + photographer) */\nhtml[dir=rtl] .notes{border-left:1px solid rgba(255,255,255,.1);border-right:3px solid #ffffff}\nhtml[dir=rtl] .notes li{padding-left:0;padding-right:22px}\nhtml[dir=rtl] .notes li:before{left:auto;right:4px}\nhtml[dir=rtl] .hint li:before{clip-path:polygon(0 0,0 100%,100% 100%)}\nhtml[dir=rtl] .f select{background-position:left 16px center;padding-right:16px;padding-left:40px}\nhtml[dir=rtl] .chks span:before{margin-right:0;margin-left:14px}\n/* tournament pages: Arabic logo + category label underneath */\nhtml[dir=rtl] .kt-logo .kt-lab{position:static;display:block;text-align:center;font-size:8cqw;font-weight:800;line-height:1.3;color:#ffffff;margin-top:1.5cqw}\n/* mirror directional arrow icons */\nhtml[dir=rtl] .more svg,html[dir=rtl] .gb svg,html[dir=rtl] button.nx svg,html[dir=rtl] button.bk svg,html[dir=rtl] a.nx svg{transform:scaleX(-1)}\nhtml[dir=rtl] .kt-logo{container-type:inline-size}\n/* karting hero (new) */\nhtml[dir=rtl] .kh-copy{width:fit-content}\nhtml[dir=rtl] .kh h1,html[dir=rtl] .kh-card h3{font-style:normal;font-weight:800;line-height:1.2}\nhtml[dir=rtl] .kh h1 em{font-style:normal}\nhtml[dir=rtl] .kh .ln{padding:0 0 .08em;margin:0}\nhtml[dir=rtl] .kh-eb u{transform-origin:right}\nhtml[dir=rtl] .kh-cta svg,html[dir=rtl] .kh-more svg{transform:scaleX(-1)}\nhtml[dir=rtl] .kh-cta:hover svg,html[dir=rtl] .kh-more:hover svg{transform:scaleX(-1) translateX(5px)}\nhtml[dir=rtl] .kh-wm{font-family:'STC Bebas','Bebas Neue',Impact,sans-serif!important}\n@media(min-width:961px){html[dir=rtl] .kh h1{font-size:max(42px,calc(var(--u)*80))}}\n@media(max-width:960px){html[dir=rtl] .kh h1{font-size:clamp(40px,11vw,84px)}}\n";document.head.appendChild(st);
+}else{html.classList.add('en')}
+
+new MutationObserver(function(ms){
+ for(var i=0;i<ms.length;i++){var m=ms[i];
+  if(m.type==='childList'){for(var j=0;j<m.addedNodes.length;j++)walk(m.addedNodes[j])}
+  else if(m.type==='characterData')doText(m.target);
+  else if(m.type==='attributes')doEl(m.target);
+ }
+}).observe(html,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATTRS.concat(['href'])});
+function special(){
+ if(!AR)return;
+ var h=document.querySelector('.cal h1');
+ if(h&&!h.dataset.i18nDone){h.dataset.i18nDone=1;h.setAttribute('aria-label','التقويم');h.innerHTML='<span class="ch2"><i style="--i:0">التقويم</i></span>'}
+}
+function full(){special();walk(document.body);if(AR){var t=tr(document.title);if(t)document.title=t}}
+document.addEventListener('DOMContentLoaded',full);
+addEventListener('load',full);
+})();
+
 </script>
 </body>
 </html>

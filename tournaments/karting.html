@@ -700,6 +700,22 @@ body.loading .kh,body.loading .kh *{animation-play-state:paused!important}
 @media(prefers-reduced-motion:reduce){.kh *,.kh-bg,.kh-wm{animation:none!important}}
 
 </style>
+<style id="stc-category-brand-hover">
+/* Tournament branding: menu item hover/focus matches its category logo. */
+nav .dd .sub a[href$="karting.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a[href$="autocross.html"]{--tournament-link-color:#00875a}
+nav .dd .sub a[href$="time-attack.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a[href$="drift.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a[href$="hill-climb.html"]{--tournament-link-color:#00875a}
+nav .dd .sub a[href$="baja.html"]{--tournament-link-color:#bb945d}
+nav .dd .sub a[href$="e-gaming.html"]{--tournament-link-color:#e8202e}
+nav .dd .sub a:is(:hover,:focus-visible){
+  color:var(--tournament-link-color,#e8202e)!important;
+  background:#f5f5f5!important;
+  transition:color .2s ease,background-color .2s ease;
+}
+nav .dd .sub a.on[href*="tournaments/"]{color:var(--tournament-link-color,#e8202e)!important}
+</style>
 </head>
 <body class="loading">
 <div class="preloader" id="preloader" aria-hidden="true">
