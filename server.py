@@ -51,6 +51,35 @@ IMAGE_TYPES = {
     "image/webp": ".webp",
 }
 UPLOAD_NAME = re.compile(r"^[a-f0-9-]+\.(?:gif|jpg|png|webp)$")
+CALENDAR_NAME = "calendar-events.json"
+CALENDAR_LIMIT = 512 * 1024
+CALENDAR_TYPES = ("Autocross", "Baja", "Drift", "E-Games", "Hill Climb", "Karting", "Local Rally", "Time Attack")
+def clean_calendar(doc):
+    if not isinstance(doc, dict) or not isinstance(doc.get("events"), list):
+        raise ValueError("Expected a calendar events array.")
+    events = doc["events"]
+    if not events or len(events) > 500:
+        raise ValueError("Calendar must have 1–500 events.")
+    clean = []
+    for i, event in enumerate(events, 1):
+        if not isinstance(event, dict):
+            raise ValueError(f"Row {i} is invalid.")
+        no = event.get("no")
+        if isinstance(no, bool) or not str(no).isdigit() or not 1 <= int(no) <= 99999:
+            raise ValueError(f"Row {i}: invalid event number.")
+        item = {k: str(event.get(k, "")).strip() for k in ("ev", "date", "dateLabel", "type", "city", "location")}
+        if any(len(value) > 240 for value in item.values()) or any(not item[k] for k in ("ev", "date", "dateLabel", "type", "city", "location")):
+            raise ValueError(f"Row {i}: missing or oversized CSV field.")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", item["date"]):
+            raise ValueError(f"Row {i}: invalid ISO date.")
+        from datetime import date
+        try: date.fromisoformat(item["date"])
+        except ValueError: raise ValueError(f"Row {i}: invalid date.")
+        if item["type"] not in CALENDAR_TYPES:
+            raise ValueError(f"Row {i}: unsupported event type {item['type']}.")
+        clean.append({"no": int(no), **item})
+    return {"events": clean, "updated": int(time.time())}
+
 RESULTS_NAME = "race-results.json"
 RESULTS_LIMIT = 2 * 1024 * 1024
 RACE_FIELDS = ("id", "title", "category", "round", "location", "date", "status", "note")
@@ -222,6 +251,11 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 self.wfile.write(body)
+            elif parsed.path == "/api/calendar":
+                path = CONTENT_ROOT / CALENDAR_NAME
+                if not path.is_file():
+                    self.send_response(204); self.end_headers(); return
+                self.send_json(200, json.loads(path.read_text(encoding="utf-8")))
             elif parsed.path in ("/api/results", "/api/live"):
                 results_path = CONTENT_ROOT / (RESULTS_NAME if parsed.path == "/api/results" else LIVE_NAME)
                 if not results_path.is_file():
@@ -311,6 +345,17 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 self.handle_save()
             elif parsed.path == "/api/dashboard/upload":
                 self.handle_upload()
+            elif parsed.path == "/api/dashboard/calendar":
+                if not self.require_session(): return
+                doc = clean_calendar(self.read_json(limit=CALENDAR_LIMIT))
+                CONTENT_ROOT.mkdir(parents=True, exist_ok=True)
+                dest = CONTENT_ROOT / CALENDAR_NAME
+                temp = dest.with_name(dest.name+"."+uuid.uuid4().hex+".tmp")
+                try:
+                    temp.write_text(json.dumps(doc,ensure_ascii=False),encoding="utf-8")
+                    os.replace(temp,dest)
+                finally: temp.unlink(missing_ok=True)
+                self.send_json(200,{"ok":True,"updated":doc["updated"]})
             elif parsed.path == "/api/dashboard/results":
                 self.handle_results()
             elif parsed.path == "/api/dashboard/live":

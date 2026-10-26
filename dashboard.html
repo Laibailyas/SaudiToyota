@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded',function(){
       <div class="mode-switch" role="tablist" aria-label="Dashboard section">
         <button type="button" role="tab" class="on" aria-selected="true" data-mode="pages">Pages</button>
         <button type="button" role="tab" aria-selected="false" data-mode="scores">Race Scores</button>
-        <button type="button" role="tab" aria-selected="false" data-mode="live">Live Scores</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="live">Live Scores</button><button type="button" role="tab" aria-selected="false" data-mode="calendar">Calendar CSV</button>
       </div>
       <div class="toolbar-actions">
         <label class="page-select-label" for="page-select">Page</label>
@@ -125,6 +125,12 @@ document.addEventListener('DOMContentLoaded',function(){
       </aside>
     </div>
 
+    <div id="calendar-layout" class="calendar-manager" hidden style="padding:40px;max-width:800px;margin:0 auto;color:#fff">
+      <h1>Calendar CSV Import</h1><p>Upload a CSV with columns: No, Event, Date, Type, City, Location. This replaces the published calendar events only after a successful import.</p>
+      <input id="calendar-import-file" type="file" accept=".csv,text/csv" style="margin:24px 0;display:block" />
+      <button id="calendar-import-action" type="button" class="primary">Import and publish CSV</button>
+      <p id="calendar-import-status" role="status" style="margin-top:20px"></p>
+    </div>
     <div id="scores-layout" class="scores-layout" data-manager="scores" hidden></div>
     <div id="live-layout" class="scores-layout" data-manager="live" hidden></div>
   </main>

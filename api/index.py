@@ -13,7 +13,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from vercel.blob import AsyncBlobClient, BlobError
 
-from server import IMAGE_TYPES, PAGE_PATHS, PAGES, LIVE_NAME, RESULTS_LIMIT, RESULTS_NAME, ROOT, UPLOAD_LIMIT, clean_live, clean_results
+from server import CALENDAR_NAME, CALENDAR_LIMIT, clean_calendar, IMAGE_TYPES, PAGE_PATHS, PAGES, LIVE_NAME, RESULTS_LIMIT, RESULTS_NAME, ROOT, UPLOAD_LIMIT, clean_live, clean_results
 
 logger = logging.getLogger("dashboard")
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -114,6 +114,30 @@ async def api_request(request: Request, route: str):
     route = route.strip("/")
     if request.method == "GET" and route == "dashboard/session":
         return json_response({"authenticated": has_session(request)})
+
+    if request.method == "GET" and route == "calendar":
+        try:
+            content = await read_page_override(f"dashboard-content/{CALENDAR_NAME}")
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not read calendar data.")
+            return json_response({"error":"Calendar is temporarily unavailable."},503)
+        if content is None:
+            return Response(status_code=204,headers={"Cache-Control":"no-store"})
+        return Response(content,media_type="application/json; charset=utf-8",headers={"Cache-Control":"no-store"})
+
+    if request.method == "POST" and route == "dashboard/calendar":
+        denied = session_required(request)
+        if denied: return denied
+        body = await request.body()
+        if len(body)>CALENDAR_LIMIT: return json_response({"error":"CSV is too large."},413)
+        try: document=clean_calendar(json.loads(body.decode("utf-8")))
+        except (ValueError,UnicodeDecodeError,json.JSONDecodeError) as error: return json_response({"error":str(error)},400)
+        try:
+            await write_blob(f"dashboard-content/{CALENDAR_NAME}",json.dumps(document,ensure_ascii=False).encode("utf-8"),"application/json; charset=utf-8")
+        except (BlobError,StorageUnavailableError):
+            logger.exception("Could not persist calendar import.")
+            return json_response({"error":"Could not persist the CSV import."},503)
+        return json_response({"ok":True,"updated":document["updated"]})
 
     if request.method == "GET" and route in ("results", "live"):
         try:

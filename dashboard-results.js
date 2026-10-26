@@ -596,11 +596,45 @@
       button.setAttribute("aria-selected", String(on));
     });
     if (editorLayout) editorLayout.hidden = mode !== "pages";
+    const calendarPanel=document.getElementById("calendar-layout"); if(calendarPanel)calendarPanel.hidden=mode!=="calendar";
     Object.entries(managers).forEach(([key, m]) => { m.root.hidden = key !== mode; });
     document.body.classList.toggle("scores-mode", mode !== "pages");
     if (managers[mode]) await managers[mode].load();
   }
   window.STC_SET_MODE = setMode;
+  const calendarFile=document.getElementById('calendar-import-file');
+  const calendarStatus=document.getElementById('calendar-import-status');
+  function parseCalendarCSV(source){
+    source=source.replace(/^\uFEFF/,'');const rows=[];let row=[],cell='',quoted=false;
+    for(let i=0;i<source.length;i++){const c=source[i];if(quoted){if(c==='"'&&source[i+1]==='"'){cell+='"';i++;}else if(c==='"')quoted=false;else cell+=c;}else if(c==='"'){quoted=true;}else if(c===','){row.push(cell);cell='';}else if(c==='\n'||c==='\r'){if(c==='\r'&&source[i+1]==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row);row=[];cell='';}else cell+=c;}
+    if(quoted)throw Error('Unclosed quote in CSV.');row.push(cell);if(row.some(v=>v.trim()))rows.push(row);
+    if(!rows.length)throw Error('The CSV is empty.');
+    const columns=rows.shift().map(v=>v.trim().toLowerCase());const required=['no','event','date','type','city','location'];
+    if(required.some(k=>!columns.includes(k)))throw Error('CSV needs columns: No, Event, Date, Type, City, Location.');
+    const existing=window.__STC_CALENDAR_DEFAULT||[];
+    const types={'autocross':'Autocross','baja':'Baja','drift':'Drift','e-games':'E-Games','e-gaming':'E-Games','hill climb':'Hill Climb','karting':'Karting','local rally':'Local Rally','time attack':'Time Attack'};
+    const months={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+    function dateIso(v,no){const raw=v.trim();if(/^\d{4}-\d{2}-\d{2}$/.test(raw))return raw;
+      const match=raw.match(/^(\d{1,2})\s*[- ]\s*(\d{1,2})?\s*([A-Za-z]{3,9})(?:\s*[- ]\s*(\d{2,4}))?/);
+      if(!match)throw Error('Could not parse date: '+raw);
+      const mon=months[match[3].slice(0,3).toLowerCase()];if(!mon)throw Error('Invalid month: '+raw);
+      const year=match[4]?Number(match[4]):2026;const yyyy=year<100?2000+year:year;
+      return [yyyy,String(mon).padStart(2,'0'),String(match[1]).padStart(2,'0')].join('-');
+    }
+    return rows.map((values,index)=>{const pick=k=>(values[columns.indexOf(k)]||'').trim();const number=Number(pick('no'));if(!Number.isInteger(number)||number<1)throw Error('Invalid No at row '+(index+2));
+      const type=types[pick('type').toLowerCase()];if(!type)throw Error('Invalid Type at row '+(index+2));
+      const event=pick('event'),dateLabel=pick('date'),city=pick('city'),location=pick('location');if(!event||!dateLabel||!city||!location)throw Error('Missing field at row '+(index+2));
+      return {no:number,ev:event,date:dateIso(dateLabel,number),dateLabel,type,city,location};
+    });
+  }
+  document.getElementById('calendar-import-action')?.addEventListener('click',async()=>{
+    const file=calendarFile.files?.[0];if(!file){calendarStatus.textContent='Choose a CSV file first.';return;}
+    if(file.size>512*1024){calendarStatus.textContent='CSV must be under 512 KB.';return;}
+    try{const events=parseCalendarCSV(await file.text());if(!window.confirm('Publish '+events.length+' calendar events? This replaces the current calendar event list.'))return;
+      const response=await fetch('/api/dashboard/calendar',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({events})});const data=await response.json();if(!response.ok)throw Error(data.error||'Import failed');
+      calendarStatus.textContent=events.length+' events imported and published successfully.';calendarFile.value='';
+    }catch(error){calendarStatus.textContent=error.message;}
+  });
 
   switcher.addEventListener("click", (event) => {
     const button = event.target.closest("[data-mode]");
