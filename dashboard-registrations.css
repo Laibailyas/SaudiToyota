@@ -1,0 +1,102 @@
+/* ===== Dashboard → Registrations (entries + form builder) ===== */
+.reg-side { gap: 12px; }
+.reg-side .quiet-link { display: block; }
+.reg-sub { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border: 1px solid #26323d; border-radius: 10px; background: #080d12; }
+.reg-sub button { min-height: 34px; border: 0; background: transparent; font-weight: 700; font-size: 13px; }
+.reg-sub button.on { background: #df2635; color: #fff; }
+.reg-dot { display: inline-block; width: 9px; height: 9px; margin-right: 8px; border-radius: 50%; vertical-align: 1px; }
+.reg-new { color: #ffc04d; font-weight: 700; }
+.reg-side-label { margin: 10px 0 0; color: #788694; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.reg-form-item { display: flex; gap: 6px; align-items: stretch; }
+.reg-form-item .race-item { flex: 1; min-width: 0; }
+.reg-form-item.on .race-item { border-color: #df2635; background: #1a1115; box-shadow: inset 3px 0 0 #df2635; }
+.reg-form-item .row-acts { flex-direction: column; justify-content: center; padding: 0; }
+.reg-main .race-form-head p { margin: 6px 0 0; }
+.reg-filters { display: grid; grid-template-columns: 1fr 210px 180px; gap: 10px; margin-bottom: 14px; }
+.reg-table { min-width: 980px; }
+.reg-table td { padding: 11px 10px; font-size: 14px; color: #dfe4e9; }
+.reg-table th { padding: 12px 10px; }
+.reg-table .c-chk { width: 42px; text-align: center; }
+.reg-table .c-chk input { width: 17px; height: 17px; accent-color: #df2635; }
+.reg-table .nowrap { white-space: nowrap; }
+.reg-row { cursor: pointer; }
+.reg-pill { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; background: #26323d; }
+.reg-pill.s-new { background: #3a2a10; color: #ffc04d; }
+.reg-pill.s-in_review { background: #1c2742; color: #9fb4ff; }
+.reg-pill.s-accepted { background: #123222; color: #5ee08f; }
+.reg-pill.s-refused { background: #3a1418; color: #ff8991; }
+
+/* entry drawer */
+.reg-drawer { position: fixed; inset: 0; z-index: 50; display: flex; justify-content: flex-end; background: #0009; }
+.reg-panel { display: flex; flex-direction: column; gap: 18px; width: min(860px, 100%); height: 100%; overflow-y: auto; padding: 26px clamp(16px, 3vw, 34px) 60px; background: #0a1016; border-left: 1px solid #26323d; box-shadow: -30px 0 80px #0008; }
+.reg-panel-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.reg-panel-head h2 { margin: 6px 0 4px; font-size: 26px; }
+.reg-official { display: grid; gap: 14px; padding: 18px; border: 1px solid #df263555; border-radius: 14px; background: #120d10; }
+.reg-official h3 { margin: 0; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: #ef4652; }
+.reg-official .race-grid { padding: 0; border: 0; background: transparent; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.reg-detail { display: grid; gap: 14px; }
+.reg-detail .rv { border: 1px solid #26323d; border-radius: 12px; overflow: hidden; background: #0c1219; }
+.reg-detail h4 { margin: 0; padding: 12px 18px; background: #121b24; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
+.reg-detail dl { display: grid; grid-template-columns: 1fr 1fr; margin: 0; }
+.reg-detail dl > div { min-width: 0; padding: 11px 18px; border-top: 1px solid #1b252f; }
+.reg-detail dl > div.w { grid-column: 1 / -1; }
+.reg-detail dt { margin-bottom: 3px; color: #8f9aa6; font-size: 12px; }
+.reg-detail dd { margin: 0; font-size: 14px; word-break: break-word; }
+.reg-detail a { color: #ff8991; }
+.reg-detail .na { color: #55606b; }
+
+/* form builder */
+.reg-color { padding: 4px 6px; cursor: pointer; }
+.reg-step { margin-top: 16px; border: 1px solid #26323d; border-radius: 14px; background: #0c1219; }
+.reg-step-head { display: flex; gap: 14px; align-items: flex-start; padding: 16px; border-bottom: 1px solid #1b252f; }
+.reg-step-no { display: grid; flex: none; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: #df2635; font-weight: 800; }
+.reg-step-grid { display: grid; flex: 1; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.reg-fields { display: grid; }
+.reg-field-row { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 16px; border-bottom: 1px solid #1b252f; }
+.reg-field-row.open { background: #141017; box-shadow: inset 3px 0 0 #df2635; }
+.reg-field-main { display: flex; flex: 1; min-width: 0; align-items: center; gap: 10px; min-height: 44px; padding: 0; border: 0; background: transparent; text-align: left; }
+.reg-field-main:hover .reg-field-label { color: #fff; }
+.reg-type { flex: none; width: 140px; color: #8f9aa6; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.reg-field-label { min-width: 0; overflow: hidden; color: #dfe4e9; font-size: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.reg-tag { flex: none; max-width: 260px; overflow: hidden; padding: 2px 8px; border-radius: 99px; background: #1c2742; color: #9fb4ff; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.reg-tag.req { background: #3a1418; color: #ff8991; }
+.reg-field-edit { padding: 16px; border-bottom: 1px solid #1b252f; background: #0f0c11; }
+.reg-field-edit .race-grid { background: #0a1016; }
+.reg-options .results-head { margin: 18px 0 10px; }
+.reg-options .results-head h3 { font-size: 16px; }
+.reg-opt-table { min-width: 760px; }
+.reg-add { display: flex; gap: 8px; padding: 12px 16px; }
+.reg-add select { width: 220px; }
+@media (max-width: 1100px) { .reg-official .race-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 850px) {
+  .reg-filters, .reg-step-grid, .reg-official .race-grid { grid-template-columns: 1fr; }
+  .reg-type { width: auto; }
+  .reg-tag { display: none; }
+  .reg-detail dl { grid-template-columns: 1fr; }
+}
+
+/* races + racer / photographer */
+.reg-live { color: #5ee08f; font-weight: 700; }
+.reg-role { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.reg-role.r-racer { background: #3a1418; color: #ff8991; }
+.reg-role.r-photographer { background: #10283a; color: #7cc7ff; }
+.reg-mail { font-size: 12px; font-weight: 700; color: #a9b2bc; }
+.reg-mail.m-sent { color: #5ee08f; }
+.reg-mail.m-failed { color: #ff8991; }
+.reg-mail.m-not_configured, .reg-mail.m-no_address { color: #ffc04d; }
+.reg-table .na { color: #556270; }
+.reg-race-box { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; padding: 16px 18px; border: 1px solid #26323d; border-radius: 14px; background: #0c1219; }
+.reg-race-box div { display: grid; gap: 4px; min-width: 0; }
+.reg-race-box span { color: #788694; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.reg-race-box b { font-size: 14px; overflow-wrap: anywhere; }
+.reg-mail-box { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 14px 18px; border: 1px solid #26323d; border-radius: 14px; background: #0c1219; }
+.reg-mail-box > div { display: grid; gap: 4px; font-size: 13px; color: #c5ccd3; }
+.reg-mail-box em { font-style: normal; font-weight: 700; }
+.reg-mail-box em.m-sent { color: #5ee08f; }
+.reg-mail-box em.m-failed { color: #ff8991; }
+.reg-mail-box em.m-not_configured, .reg-mail-box em.m-no_address, .reg-mail-box em.m-none { color: #ffc04d; }
+.reg-mail-err { color: #ff8991; font-size: 12px; }
+.reg-mail-settings { margin-top: 22px; }
+.reg-mail-settings .results-head { margin-bottom: 10px; }
+.reg-warn { color: #ffc04d; }
+@media (max-width: 900px) { .reg-race-box { grid-template-columns: repeat(2, minmax(0, 1fr)); } .reg-filters { grid-template-columns: 1fr; } .reg-mail-box { flex-direction: column; align-items: stretch; } }

@@ -41,3 +41,45 @@ The public page is `results.html`. In the dashboard, switch the top bar from **P
 ## Live Scores
 
 The public page is `live.html`. In the dashboard, choose **Live Scores** in the top bar to add live races, set each race's **Live race link** (the button visitors click to open the live race) and button text, and enter timing per driver: run times (`1:05.483`), penalties (`+2.000`) and `DIS`/`DNF`. Best time, gap to first and gap to previous are calculated automatically; **Auto-rank by best time** fills the positions. Up to three runs are supported, and CSV import/export and pasting from Excel work the same as on Race Scores. Saving stores `live-scores.json` (local folder or Vercel Blob), served from `/api/live`; while a race is marked Live, the public page refreshes every 20 seconds.
+
+## Registrations
+
+The public page is `registration.html`. It shows one tab per championship entry form (Karting, Autocross, Time Attack, Drift, Hill Climb and Baja by default, converted from the SAMF 2026 entry forms). Each tab is the same multi-step form; documents are uploaded as soon as they are chosen (PDF, JPG or PNG, up to 4 MB each), the last step shows a review with the fee total, and submitting gives the competitor a reference number such as `STC-DR-1A2B3C`. Link straight to a tab with `registration.html?form=drift`. The page also works in Arabic (`?lang=ar`) using the Arabic labels saved with each form.
+
+In the dashboard, choose **Registrations** in the top bar:
+
+- **Entries** lists every submission, grouped by form in the sidebar (with the number of new entries). Search, filter by status, select and delete entries, or **Export CSV** (opens in Excel, one column per form field). Click an entry to see everything the competitor submitted, open or download their documents, print the entry, and fill in the *For official use only* fields: status (New, In review, Accepted, Refused), entry number, competition number allocated, class confirmed, fee received, received by and remarks.
+- **Forms** is the form builder. Add, duplicate, reorder or delete forms (tabs); hide a tab or close registrations with a message; edit the notes shown above the tabs; add, move, duplicate or delete steps and fields; set each field's type, English and Arabic labels, help text, required flag, width, options (with optional price in SAR and fee multiplier) and an optional condition (for example *show only if Competitor is the driver is No*, or *Age is less than 18*). **Save & publish** updates the registration page immediately. Entries of a deleted form stay available under *Deleted forms*.
+
+Storage: locally, the edited forms are saved to `.dashboard-content/registration-forms.json`, and entries and uploaded documents to `.dashboard-registrations/` (private, never served to visitors; back it up with the other storage folders). On Vercel they are stored in the private Blob store under `dashboard-content/registration-forms.json` and `registrations/`. Until the forms are first saved from the dashboard, the built-in `registration-forms.json` is used. Uploaded documents can only be opened from the dashboard after logging in.
+
+## Race registration (racers & photographers)
+
+Registration now opens **per race**. In the dashboard choose **Registrations → Races → + Open registration for a race** and enter the race name (English/Arabic), location, category (Karting, Autocross, Time Attack, Drift, Hill Climb or Baja), dates and an optional registration deadline (KSA time). Tick whether **Racers**, **Photographers** or both can register, keep **Registration open** ticked and click **Save & publish**.
+
+`registration.html` then lists the open races. The visitor picks a race, chooses **Racer** or **Photographer**, and fills in the form:
+
+- Racers get the championship form of the race category (Round / Venue / Event dates are filled in from the race automatically).
+- Photographers get one shared **Photographer** form (same questions as `photographer.html`) — the race, category and location are saved with the entry, so one form serves every race.
+
+Direct link to a race: `registration.html?race=<race id>` (shown in the race editor). A race closes automatically when its deadline passes.
+
+**Entries** groups registrations by race (with racer / photographer counts) and by form; filter by type and status, open an entry to see the race details and e-mail status, and **Export CSV (Excel)** exports exactly the filtered list with Race, Category, Location, Date and Registered-as columns.
+
+### E-mails
+
+After each registration the site e-mails a confirmation (with the reference and a summary) to the e-mail address entered in the form, and a notification to the organiser addresses set under **Races → E-mail notifications**. Configure SMTP with environment variables (locally or in Vercel → Environment Variables):
+
+| Variable | Example |
+|---|---|
+| `SMTP_HOST` | `smtp.gmail.com` / `smtp.office365.com` |
+| `SMTP_PORT` | `587` (STARTTLS) or `465` (SSL) |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | the mailbox login (for Gmail an App Password) |
+| `SMTP_FROM` | `registrations@yourdomain.com` |
+| `SMTP_FROM_NAME` | `Saudi Toyota Championship` (optional) |
+| `REGISTRATION_NOTIFY_EMAIL` | extra organiser addresses (optional) |
+| `SITE_URL` | `https://yourdomain.com` (optional, used for the dashboard link) |
+
+Use **Send test e-mail** in Races to check the setup. If e-mail is not configured or fails, the registration is still saved; the entry shows the e-mail status and has a **Resend e-mails** button.
+
+Storage: races are saved to `.dashboard-content/registration-races.json` locally, or `dashboard-content/registration-races.json` in Vercel Blob.

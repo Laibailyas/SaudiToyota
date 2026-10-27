@@ -1,8 +1,3 @@
-import csv
-import io
-import urllib.request
-import urllib.error
-import datetime
 import hashlib
 import hmac
 import json
@@ -16,10 +11,13 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
-from vercel.blob import AsyncBlobClient, list_objects
-from vercel.blob.errors import BlobError
+from vercel.blob import AsyncBlobClient, BlobError
 
 from server import CALENDAR_NAME, CALENDAR_LIMIT, clean_calendar, IMAGE_TYPES, PAGE_PATHS, PAGES, LIVE_NAME, RESULTS_LIMIT, RESULTS_NAME, ROOT, UPLOAD_LIMIT, clean_live, clean_results
+import asyncio
+from urllib.parse import quote
+
+import registrations as reg
 
 logger = logging.getLogger("dashboard")
 app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
@@ -116,219 +114,261 @@ async def write_blob(pathname: str, body: bytes, content_type: str):
     )
 
 
+REG_ENTRIES = "registrations/entries"
+REG_FILES = "registrations/files"
 
-REG_RACES_PATH = ROOT / "registration-races.json"
-REG_RACES_BLOB = "dashboard-content/registration-races.json"
 
-def valid_races(document):
-    if not isinstance(document,dict) or not isinstance(document.get("races"),list) or len(document["races"])>300:
-        raise ValueError("Invalid race list")
-    original=json.loads(REG_RACES_PATH.read_text(encoding="utf-8"))["races"]
-    allowed={r["id"]:r for r in original}
-    seen=set()
-    for race in document["races"]:
-        if not isinstance(race,dict) or race.get("id") not in allowed or race["id"] in seen:
-            raise ValueError("Race IDs must match the existing calendar")
-        seen.add(race["id"])
-        for key in ("name","location","city","category","date"):
-            if race.get(key)!=allowed[race["id"]][key]:raise ValueError("Existing race data cannot be modified here")
-        if not isinstance(race.get("open"),bool):raise ValueError("Invalid registration state")
-    if seen!=set(allowed):raise ValueError("Cannot remove a calendar race")
-    return document
+async def read_registration_forms():
+    content = await read_page_override(f"dashboard-content/{reg.FORMS_NAME}")
+    return reg.parse_forms(content)
 
-async def get_races():
-    saved=await read_page_override(REG_RACES_BLOB)
-    return valid_races(json.loads(saved)) if saved else valid_races(json.loads(REG_RACES_PATH.read_text(encoding="utf-8")))
 
-def registration_email(to, subject, body):
-    api_key=os.environ.get("RESEND_API_KEY")
-    sender=os.environ.get("REGISTRATION_FROM_EMAIL")
-    if not api_key or not sender:return False,"Email provider not configured"
-    payload=json.dumps({"from":sender,"to":[to],"subject":subject,"text":body}).encode()
-    request=urllib.request.Request("https://api.resend.com/emails",data=payload,headers={"Authorization":"Bearer "+api_key,"Content-Type":"application/json"},method="POST")
+async def read_registration_races():
+    content = await read_page_override(f"dashboard-content/{reg.RACES_NAME}")
+    return reg.parse_races(content)
+
+
+def site_url(request: Request) -> str:
+    configured = os.environ.get("SITE_URL", "").strip()
+    if configured:
+        return configured
+    return str(request.base_url).rstrip("/")
+
+
+async def blob_items(prefix: str):
+    items = []
+    iterator = await blob_client().iter_objects(prefix=prefix)
+    async for item in iterator:
+        items.append(item)
+    return items
+
+
+async def blob_file_exists(token: str) -> bool:
+    if not reg.FILE_TOKEN.fullmatch(token):
+        return False
+    return any(item.pathname == f"{REG_FILES}/{token}" for item in await blob_items(f"{REG_FILES}/{token}"))
+
+
+async def read_entry(form_id: str, entry_id: str):
+    if not reg.FORM_ID.fullmatch(form_id) or not reg.ENTRY_ID.fullmatch(entry_id):
+        return None
+    content = await read_blob(f"{REG_ENTRIES}/{form_id}/{entry_id}.json")
+    return json.loads(content.decode("utf-8")) if content else None
+
+
+async def write_entry(entry):
+    await write_blob(f"{REG_ENTRIES}/{entry['form']}/{entry['id']}.json",
+                     json.dumps(entry, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+
+
+async def registration_request(request: Request, route: str):
+    """Competitor registration routes (public upload/submit and dashboard management)."""
+    if request.method == "GET" and route == "registration-forms":
+        try:
+            document = await read_registration_forms()
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not read registration forms.")
+            document = reg.load_default_forms()
+        return json_response(reg.public_forms(document))
+
+    if request.method == "GET" and route == "registration-races":
+        try:
+            forms_doc, races_doc = await read_registration_forms(), await read_registration_races()
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not read registration races.")
+            forms_doc, races_doc = reg.load_default_forms(), reg.empty_races()
+        return json_response(reg.public_races(races_doc, forms_doc))
+
+    if request.method == "POST" and route == "registrations/upload":
+        form_id = request.query_params.get("form", "")
+        field_id = request.query_params.get("field", "")
+        try:
+            if not reg.upload_allowed(await read_registration_forms(), form_id, field_id):
+                return json_response({"error": "This upload is not available."}, 400)
+            body = await request.body()
+            extension = reg.check_upload(request.headers.get("content-type", ""), body)
+            token = reg.new_file_token(extension)
+            await write_blob(f"{REG_FILES}/{token}", body, reg.FILE_MEDIA[extension])
+        except OverflowError as error:
+            return json_response({"error": str(error)}, 413)
+        except ValueError as error:
+            return json_response({"error": str(error)}, 400)
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not store a registration document.")
+            return json_response({"error": "The file could not be saved. Please try again."}, 503)
+        return json_response({"token": token, "size": len(body)})
+
+    if request.method == "POST" and route == "registrations/submit":
+        body = await request.body()
+        if len(body) > reg.SUBMIT_LIMIT:
+            return json_response({"error": "The registration is too large."}, 413)
+        try:
+            payload = json.loads(body.decode("utf-8"))
+            document = await read_registration_forms()
+            tokens = {}
+            for ref in (payload.get("files") or {}).values() if isinstance(payload, dict) and isinstance(payload.get("files"), dict) else []:
+                token = str(ref.get("token", "")) if isinstance(ref, dict) else ""
+                if reg.FILE_TOKEN.fullmatch(token):
+                    tokens[token] = await blob_file_exists(token)
+            races_doc = await read_registration_races()
+            form, entry = reg.clean_submission(document, payload, lambda token: tokens.get(token, False), races_doc)
+            await write_entry(entry)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return json_response({"error": "Invalid registration."}, 400)
+        except ValueError as error:
+            return json_response({"error": str(error)}, 400)
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not save a registration.")
+            return json_response({"error": "The registration could not be saved. Please try again."}, 503)
+        try:
+            entry["mail"] = await asyncio.to_thread(reg.notify, entry, form, races_doc, site_url(request))
+            await write_entry(entry)
+        except (BlobError, StorageUnavailableError):
+            logger.exception("Could not store the e-mail status of a registration.")
+        return json_response({"ok": True, "ref": entry["ref"],
+                              "emailed": entry.get("mail", {}).get("to", "") if entry.get("mail", {}).get("registrant") == "sent" else ""})
+
+    denied = session_required(request)
+    if denied:
+        return denied
+
     try:
-        with urllib.request.urlopen(request,timeout=8) as response:
-            return response.status in (200,201),"accepted by provider" if response.status in (200,201) else "provider rejected message"
-    except (urllib.error.URLError,TimeoutError) as exc:
-        logger.warning("Registration email provider failure: %s",type(exc).__name__)
-        return False,"provider request failed"
+        if request.method == "GET" and route == "dashboard/registration-forms":
+            return json_response(await read_registration_forms())
 
-REG_FORMS_PATH = ROOT / "registration-forms.json"
-REG_FORMS_BLOB = "dashboard-content/registration-forms.json"
-REG_ENTRIES_BLOB = "dashboard-content/registration-entries.json"
-REG_TYPES = {"text", "email", "tel", "date", "number", "textarea", "select", "checkbox"}
+        if request.method == "POST" and route == "dashboard/registration-forms":
+            body = await request.body()
+            if len(body) > reg.FORMS_LIMIT:
+                return json_response({"error": "The forms are too large to save."}, 413)
+            try:
+                document = reg.clean_forms(json.loads(body.decode("utf-8")))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return json_response({"error": "Invalid forms request."}, 400)
+            except ValueError as error:
+                return json_response({"error": str(error)}, 400)
+            await write_blob(f"dashboard-content/{reg.FORMS_NAME}", json.dumps(document, ensure_ascii=False).encode("utf-8"),
+                             "application/json; charset=utf-8")
+            return json_response({"ok": True, "updated": document["updated"], "forms": document["forms"]})
 
-def validate_form_document(data):
-    if not isinstance(data, dict) or not isinstance(data.get("forms"), list) or len(data["forms"]) > 30:
-        raise ValueError("Invalid forms data (30 maximum).")
-    ids=set()
-    for form in data["forms"]:
-        if not isinstance(form,dict) or not re.fullmatch(r"[a-z0-9-]{1,55}",str(form.get("id",""))) or form["id"] in ids:
-            raise ValueError("Each form needs a unique valid ID.")
-        ids.add(form["id"])
-        if not isinstance(form.get("title"),str) or not 1 <= len(form["title"]) <= 120:
-            raise ValueError("Invalid form title.")
-        if not isinstance(form.get("fields"),list) or not 1 <= len(form["fields"]) <= 120:
-            raise ValueError("Each form needs between 1 and 120 fields.")
-        field_ids=set()
-        for field in form["fields"]:
-            if not isinstance(field,dict) or not re.fullmatch(r"[a-z0-9_]{1,60}",str(field.get("id",""))) or field["id"] in field_ids:
-                raise ValueError("Duplicate or invalid field ID.")
-            field_ids.add(field["id"])
-            if field.get("type") not in REG_TYPES or not isinstance(field.get("label"),str) or not 1 <= len(field["label"]) <= 220:
-                raise ValueError("Invalid field label/type.")
-            if field["type"] == "select" and (not isinstance(field.get("options"),list) or len(field["options"]) > 60 or any(not isinstance(o,str) or len(o)>120 for o in field["options"])):
-                raise ValueError("Invalid field options.")
-    return {"forms":data["forms"]}
+        if request.method == "GET" and route == "dashboard/registration-races":
+            return json_response({**(await read_registration_races()), "mail": reg.mail_status()})
 
-async def get_reg_forms():
-    content = await read_page_override(REG_FORMS_BLOB)
-    return validate_form_document(json.loads(content)) if content else validate_form_document(json.loads(REG_FORMS_PATH.read_text(encoding="utf-8")))
+        if request.method == "POST" and route == "dashboard/registration-races":
+            body = await request.body()
+            if len(body) > reg.RACES_LIMIT:
+                return json_response({"error": "The races are too large to save."}, 413)
+            try:
+                document = reg.clean_races(json.loads(body.decode("utf-8")), await read_registration_forms())
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return json_response({"error": "Invalid races request."}, 400)
+            except ValueError as error:
+                return json_response({"error": str(error)}, 400)
+            await write_blob(f"dashboard-content/{reg.RACES_NAME}", json.dumps(document, ensure_ascii=False).encode("utf-8"),
+                             "application/json; charset=utf-8")
+            return json_response({"ok": True, **document})
 
-async def get_reg_entries():
-    content=await read_page_override(REG_ENTRIES_BLOB)
-    return json.loads(content) if content else {"entries":[]}
+        if request.method == "POST" and route == "dashboard/registrations/test-email":
+            try:
+                data = await request.json()
+                messages = reg.test_message(data.get("to") if isinstance(data, dict) else "")
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return json_response({"error": "Invalid request."}, 400)
+            except ValueError as error:
+                return json_response({"error": str(error)}, 400)
+            result = await asyncio.to_thread(reg.send_messages, messages)
+            if result.get("test") == "not_configured":
+                return json_response({"error": "E-mail is not set up on the server (SMTP_HOST …)."}, 400)
+            if result.get("test") != "sent":
+                return json_response({"error": f"The test e-mail could not be sent: {result.get('error', 'unknown error')}"}, 400)
+            return json_response({"ok": True})
+
+        if request.method == "POST" and route == "dashboard/registrations/resend":
+            try:
+                data = await request.json()
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return json_response({"error": "Invalid request."}, 400)
+            entry = await read_entry(str(data.get("form", "")), str(data.get("id", ""))) if isinstance(data, dict) else None
+            if not entry:
+                return json_response({"error": "Entry not found."}, 404)
+            form = reg.find_form(await read_registration_forms(), entry["form"])
+            entry["mail"] = await asyncio.to_thread(reg.notify, entry, form, await read_registration_races(), site_url(request))
+            await write_entry(entry)
+            return json_response({"ok": True, "entry": entry})
+
+        if request.method == "GET" and route == "dashboard/registrations":
+            items = [item for item in await blob_items(f"{REG_ENTRIES}/") if item.pathname.endswith(".json")]
+            entries = []
+            for start in range(0, len(items), 20):
+                batch = await asyncio.gather(*(read_blob(item.pathname) for item in items[start:start + 20]))
+                for content in batch:
+                    try:
+                        if content:
+                            entries.append(json.loads(content.decode("utf-8")))
+                    except (ValueError, UnicodeDecodeError):
+                        continue
+            entries.sort(key=lambda e: e.get("created", 0), reverse=True)
+            return json_response({"entries": entries})
+
+        if request.method == "GET" and route == "dashboard/registrations/file":
+            token = request.query_params.get("token", "")
+            content = await read_blob(f"{REG_FILES}/{token}") if reg.FILE_TOKEN.fullmatch(token) else None
+            if content is None:
+                return json_response({"error": "File not found."}, 404)
+            name = reg.download_name(request.query_params.get("name", ""), token)
+            disposition = "inline" if request.query_params.get("inline") == "1" else "attachment"
+            return Response(content, media_type=reg.FILE_MEDIA[Path(token).suffix], headers={
+                "Cache-Control": "no-store", "Content-Disposition": f"{disposition}; filename*=UTF-8''{quote(name)}"})
+
+        if request.method == "POST" and route == "dashboard/registrations/update":
+            try:
+                data = await request.json()
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return json_response({"error": "Invalid update."}, 400)
+            entry = await read_entry(str(data.get("form", "")), str(data.get("id", ""))) if isinstance(data, dict) else None
+            if not entry:
+                return json_response({"error": "Entry not found."}, 404)
+            try:
+                reg.apply_entry_update(entry, data)
+            except ValueError as error:
+                return json_response({"error": str(error)}, 400)
+            await write_entry(entry)
+            return json_response({"ok": True, "entry": entry})
+
+        if request.method == "POST" and route == "dashboard/registrations/delete":
+            try:
+                data = await request.json()
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return json_response({"error": "Invalid request."}, 400)
+            items = data.get("items") if isinstance(data, dict) and isinstance(data.get("items"), list) else []
+            deleted = 0
+            for item in items[:500]:
+                if not isinstance(item, dict):
+                    continue
+                entry = await read_entry(str(item.get("form", "")), str(item.get("id", "")))
+                if not entry:
+                    continue
+                paths = {f"{REG_ENTRIES}/{entry['form']}/{entry['id']}.json"}
+                paths.update(f"{REG_FILES}/{ref.get('token')}" for ref in (entry.get("files") or {}).values()
+                             if reg.FILE_TOKEN.fullmatch(str(ref.get("token", ""))))
+                urls = []
+                for path in paths:
+                    urls += [blob.url for blob in await blob_items(path) if blob.pathname == path]
+                if urls:
+                    await blob_client().delete(urls)
+                deleted += 1
+            return json_response({"ok": True, "deleted": deleted})
+    except (BlobError, StorageUnavailableError):
+        logger.exception("Registration storage request failed.")
+        return json_response({"error": "Persistent storage is temporarily unavailable."}, 503)
+
+    return json_response({"error": "Not found."}, 404)
+
 
 async def api_request(request: Request, route: str):
     route = route.strip("/")
-    if request.method == "GET" and route == "registration/races":
-        try:return json_response(await get_races())
-        except (BlobError,StorageUnavailableError,ValueError):return json_response({"error":"Race registrations unavailable"},503)
-    if route == "dashboard/registration-races":
-        denied=session_required(request)
-        if denied:return denied
-        if request.method == "GET":
-            try:return json_response(await get_races())
-            except (BlobError,StorageUnavailableError,ValueError):return json_response({"error":"Race settings unavailable"},503)
-        if request.method == "PUT":
-            try:
-                body=await request.body()
-                if len(body)>100000:return json_response({"error":"Payload too large"},413)
-                document=valid_races(json.loads(body))
-                await write_blob(REG_RACES_BLOB,json.dumps(document).encode(),"application/json")
-                return json_response({"ok":True})
-            except (ValueError,TypeError,KeyError):return json_response({"error":"Invalid race settings"},400)
-            except (BlobError,StorageUnavailableError):return json_response({"error":"Could not save race settings"},503)
-    if route == "dashboard/registration-export" and request.method == "GET":
-        denied=session_required(request)
-        if denied:return denied
-        try:
-            import asyncio
-            blobs=await asyncio.to_thread(list_objects,prefix="registration-entries/",limit=1000)
-            output=io.StringIO();writer=csv.writer(output)
-            writer.writerow(["Reference","Submitted UTC","Race","Location","Category","Registration type","Form","Field","Value"])
-            for blob in blobs.blobs:
-                if not blob.pathname.endswith(".json"):continue
-                raw=await read_blob(blob.pathname)
-                if not raw:continue
-                entry=json.loads(raw)
-                for value in entry.get("values",{}).values():
-                    cell=str(value.get("value",""))
-                    if cell.startswith(("=","+","-","@")):cell="'"+cell
-                    writer.writerow([entry.get("id"),datetime.datetime.fromtimestamp(entry.get("created",0),datetime.timezone.utc).isoformat(),entry.get("race_name",""),entry.get("race_location",""),entry.get("race_category",""),entry.get("registration_type",""),entry.get("form_title",""),value.get("label",""),cell])
-            return Response(output.getvalue(),media_type="text/csv; charset=utf-8",headers={"Content-Disposition":"attachment; filename=registration-entries.csv","Cache-Control":"no-store"})
-        except (BlobError,StorageUnavailableError):return json_response({"error":"Export unavailable"},503)
-    if request.method == "GET" and route == "registration/forms":
-        try:
-            document=await get_reg_forms()
-            return json_response({"forms":[f for f in document["forms"] if f.get("active",True)]})
-        except (BlobError,StorageUnavailableError,ValueError):
-            return json_response({"error":"Registration forms could not be loaded."},503)
-
-    if request.method == "POST" and route == "registration/submit":
-        body=await request.body()
-        if len(body)>200000: return json_response({"error":"Submission exceeds size limit."},413)
-        try:
-            payload=json.loads(body)
-            document=await get_reg_forms()
-            form=next((x for x in document["forms"] if x["id"]==payload.get("form_id") and x.get("active",True)),None)
-            if form is None: return json_response({"error":"This registration form is unavailable."},404)
-            races=await get_races()
-            race=next((r for r in races["races"] if r["id"]==payload.get("race_id")),None)
-            registration_type=payload.get("registration_type")
-            if race is None or not race["open"]:return json_response({"error":"Registration for this race is closed."},403)
-            if registration_type not in ("racer","photographer"):return json_response({"error":"Select a registration type"},400)
-            if (form["id"]=="photographer")!=(registration_type=="photographer"):
-                return json_response({"error":"The selected form does not match the registration type"},400)
-            # Match competitor form to the selected race category.
-            if registration_type=="racer" and re.sub(r"[^a-z0-9]","",form["title"].lower()) != re.sub(r"[^a-z0-9]","",race["category"].lower()):
-                return json_response({"error":"This form does not match the race category"},400)
-            email=payload.get("contact_email","")
-            if not isinstance(email,str) or not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+",email) or len(email)>250:
-                return json_response({"error":"A valid confirmation email is required."},400)
-            values=payload.get("values")
-            if not isinstance(values,dict): return json_response({"error":"Invalid submission."},400)
-            clean={}
-            for field in form["fields"]:
-                value=values.get(field["id"],"")
-                if field["type"]=="checkbox": value=bool(value)
-                elif not isinstance(value,str) or len(value)>3000: return json_response({"error":"Invalid field value."},400)
-                if field.get("required") and (not value or (isinstance(value,str) and not value.strip())):
-                    return json_response({"error":"Required field missing: "+field["label"]},400)
-                if field["type"]=="email" and value and not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+",value):
-                    return json_response({"error":"Invalid email address."},400)
-                if field["type"]=="select" and value and value not in field.get("options",[]):
-                    return json_response({"error":"Invalid selection."},400)
-                clean[field["id"]]={"label":field["label"],"value":value}
-            # Client-generated idempotency token avoids duplicate persistence on retries.
-            token=payload.get("submission_token","")
-            if not isinstance(token,str) or not re.fullmatch(r"[a-f0-9-]{36}",token):return json_response({"error":"Invalid submission token"},400)
-            ref="STC-"+hashlib.sha256(token.encode()).hexdigest()[:12].upper()
-            try:
-                existing=await read_blob("registration-entries/"+ref+".json")
-                if existing:return json_response({"ok":True,"reference":ref,"duplicate":True,"email_status":"See original submission"})
-            except (BlobError,StorageUnavailableError):
-                logger.exception("Could not check submission idempotency")
-                return json_response({"error":"Could not verify the submission. Retry safely."},503)
-            entry={"id":ref,"form_id":form["id"],"form_title":form["title"],"created":int(time.time()),"values":clean,"race_id":race["id"],"race_name":race["name"],"race_location":race["location"],"race_category":race["category"],"registration_type":registration_type,"contact_email":email}
-            # Each entry stored as separate immutable blob: concurrent registrations cannot overwrite one another.
-            await write_blob("registration-entries/"+ref+".json",json.dumps(entry,ensure_ascii=False).encode(),"application/json")
-            summary="\n".join(f"{v['label']}: {v['value']}" for v in clean.values())
-            text_body=f"Reference: {ref}\nRace: {race['name']}\nLocation: {race['location']}\nCategory: {race['category']}\nRegistration type: {registration_type}\n\n{summary}"
-            from starlette.concurrency import run_in_threadpool
-            applicant_sent,_=await run_in_threadpool(registration_email,email,"Saudi Toyota Championship registration received",text_body)
-            admin_address=os.environ.get("REGISTRATION_ADMIN_EMAIL","")
-            admin_sent=False
-            if admin_address:admin_sent,_=await run_in_threadpool(registration_email,admin_address,"New Saudi Toyota Championship registration",text_body)
-            return json_response({"ok":True,"reference":ref,"email_status":{"registrant":"provider_accepted" if applicant_sent else "not_sent","admin":"provider_accepted" if admin_sent else "not_sent"}})
-        except (BlobError,StorageUnavailableError):
-            logger.exception("Registration failed")
-            return json_response({"error":"Registration could not be saved. Try again."},503)
-        except (ValueError,TypeError,KeyError,UnicodeDecodeError):
-            return json_response({"error":"Invalid registration request."},400)
-
-    if route in ("dashboard/registration-forms","dashboard/registration-entries"):
-        denied=session_required(request)
-        if denied:return denied
-        if route == "dashboard/registration-forms":
-            if request.method=="GET":
-                try:return json_response(await get_reg_forms())
-                except (BlobError,StorageUnavailableError):return json_response({"error":"Cannot load forms."},503)
-            if request.method=="PUT":
-                body=await request.body()
-                if len(body)>500000:return json_response({"error":"Forms document is too large."},413)
-                try:
-                    document=validate_form_document(json.loads(body))
-                    await write_blob(REG_FORMS_BLOB,json.dumps(document,ensure_ascii=False).encode(),"application/json")
-                    return json_response({"ok":True})
-                except (ValueError,TypeError,KeyError,json.JSONDecodeError) as exc:return json_response({"error":str(exc)},400)
-                except (BlobError,StorageUnavailableError):return json_response({"error":"Cannot save forms."},503)
-        if route == "dashboard/registration-entries" and request.method=="GET":
-            try:
-                import asyncio
-                blob_client()  # Require configured private storage before listing.
-                result=await asyncio.to_thread(list_objects,prefix="registration-entries/",limit=250)
-                entries=[]
-                for blob in result.blobs:
-                    if not blob.pathname.endswith(".json"):continue
-                    content=await read_blob(blob.pathname)
-                    if content: entries.append(json.loads(content))
-                entries.sort(key=lambda x:x.get("created",0),reverse=True)
-                return json_response({"entries":entries,"has_more":bool(getattr(result,"has_more",False))})
-            except (BlobError,StorageUnavailableError,AttributeError):
-                logger.exception("Could not list registrations")
-                return json_response({"error":"Unable to load submissions."},503)
-
+    if route in ("registration-forms", "dashboard/registration-forms", "registration-races", "dashboard/registration-races") \
+            or route.startswith(("registrations/", "dashboard/registrations")):
+        return await registration_request(request, route)
     if request.method == "GET" and route == "dashboard/session":
         return json_response({"authenticated": has_session(request)})
 

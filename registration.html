@@ -448,6 +448,74 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 });
 </script>
+<style id="reg-tabs-style">
+/* ===== Registration tabs + dynamic entry forms ===== */
+.rtabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 clamp(18px,2vw,28px)}
+.rtab{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:#0d0d0d;color:rgba(255,255,255,.72);font:700 13.5px Inter,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s,background .2s,transform .2s,box-shadow .2s}
+.rtab-dot{width:8px;height:8px;border-radius:50%;background:var(--tc,#e8202e);box-shadow:0 0 10px var(--tc,#e8202e);flex:none}
+.rtab small{font-size:10px;letter-spacing:.08em;padding:2px 7px;border-radius:99px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.75)}
+.rtab:hover{border-color:rgba(255,255,255,.35);color:#fff;transform:translateY(-1px)}
+.rtab.on{color:#fff;border-color:var(--tc,#e8202e);background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.01)),#120b0c;box-shadow:0 0 0 1px var(--tc,#e8202e) inset,0 14px 34px rgba(0,0,0,.45)}
+.rtab.on:after{content:"";position:absolute;left:18%;right:18%;bottom:-1px;height:2px;border-radius:2px;background:var(--tc,#e8202e);box-shadow:0 0 12px var(--tc,#e8202e)}
+.rtab:focus-visible{outline:2px solid #fff;outline-offset:2px}
+#card [hidden]{display:none!important}
+.loadmsg{padding:40px 10px;text-align:center;color:rgba(255,255,255,.6);font-size:15px}
+.fhead{display:flex;flex-direction:column;gap:8px;margin-bottom:clamp(26px,3vw,42px)}
+.fhead strong{font:800 clamp(18px,1.7vw,26px)/1.2 Montserrat,Arial,sans-serif;letter-spacing:-.01em}
+.fg>.fh{margin-top:6px}
+.fh h3{display:flex;align-items:center;gap:10px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);font:800 clamp(16px,1.3vw,20px) Montserrat,Arial,sans-serif;letter-spacing:-.01em}
+.fg>.fh:first-child h3{padding-top:0;border-top:0}
+.fh h3 .tri{width:.75em;height:.75em}
+.fnote{background:#0c0c0c;border:1px solid rgba(255,255,255,.09);border-inline-start:3px solid #e8202e;border-radius:8px;padding:14px 18px;gap:6px}
+.fnote p{font-size:13px;line-height:1.65;color:rgba(255,255,255,.6)}
+.f .help{font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.5)}
+.f input[type=date],.f textarea{width:100%;background:#101010;color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:8px;font:500 15px Inter,Arial,sans-serif;outline:0;transition:border-color .18s,box-shadow .18s,background .18s;color-scheme:dark}
+.f input[type=date]{height:52px;padding:0 16px}
+.f textarea{min-height:110px;padding:14px 16px;resize:vertical;line-height:1.5}
+.f textarea:focus,.f input[type=date]:focus{border-color:#e8202e;box-shadow:0 0 0 3px rgba(232,32,46,.22);background:#131313}
+.f.bad textarea,.f.bad input[type=date]{border-color:#e8202e;background:rgba(232,32,46,.06)}
+.opts.many{grid-template-columns:repeat(3,1fr)}
+.opts span{justify-content:center}
+.opts b{line-height:1.35}
+.f.multi .chks,.f.single .chks{gap:12px}
+.f.multi.bad .chks span:before{border-color:#e8202e}
+.f.single .chks label{font-size:clamp(13.5px,1vw,15.5px)}
+.up.busy .drop{opacity:.75;pointer-events:none}
+.up.busy .fn{color:#fff}
+.closed{display:flex;gap:14px;align-items:center;padding:26px 24px;border:1px dashed rgba(255,255,255,.25);border-radius:12px;background:rgba(255,255,255,.02)}
+.closed p{font-size:clamp(15px,1.2vw,18px);color:rgba(255,255,255,.8)}
+.okbtns{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.ok .bk.again{visibility:visible}
+.nx:disabled{opacity:.6;cursor:wait;transform:none}
+/* race cards + register-as picker */
+.rtabs.races{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.rcard{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px;min-height:0;padding:16px 18px;text-align:start;text-transform:none;letter-spacing:0}
+.rc-cat{display:flex;align-items:center;gap:8px;font:700 11.5px Inter,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--tc,#e8202e)}
+.rc-name{font:800 17px/1.25 Montserrat,Arial,sans-serif;color:#fff}
+.rc-meta{font:500 13px Inter,Arial,sans-serif;color:rgba(255,255,255,.65)}
+.rcard .rc-dl{font-size:11px;letter-spacing:.02em;text-transform:none;background:rgba(232,32,46,.14);color:#ff9aa1}
+.racehead .fhead{margin-bottom:20px}
+.rmeta{font:500 14px Inter,Arial,sans-serif;color:rgba(255,255,255,.65)}
+.rolepick{display:flex;flex-direction:column;gap:12px;margin-bottom:clamp(26px,3vw,40px);padding-bottom:clamp(22px,2.6vw,34px);border-bottom:1px solid rgba(255,255,255,.1)}
+.rolepick .lb{font:700 13px Inter,Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.7)}
+.roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.roles.one{grid-template-columns:minmax(0,420px)}
+.role{display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:#0f0f0f;color:#fff;text-align:start;cursor:pointer;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
+.role:hover{border-color:rgba(255,255,255,.4);transform:translateY(-1px)}
+.role.on{border-color:var(--fc,#e8202e);background:linear-gradient(135deg,rgba(232,32,46,.12),rgba(255,255,255,.01)),#120b0c;box-shadow:0 0 0 1px var(--fc,#e8202e) inset,0 14px 34px rgba(0,0,0,.45)}
+.role:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.role-ic{flex:none;display:grid;place-items:center;width:52px;height:52px;border-radius:12px;background:rgba(255,255,255,.06);color:var(--fc,#e8202e)}
+.role-ic svg{width:28px;height:28px}
+.role-tx{display:flex;flex-direction:column;gap:4px}
+.role-tx b{font:800 18px Montserrat,Arial,sans-serif}
+.role-tx small{font-size:13px;line-height:1.45;color:rgba(255,255,255,.6)}
+.rolehint{font-size:14px;color:rgba(255,255,255,.55)}
+.f.locked input{opacity:.8;cursor:default;background:#0b0b0b}
+.ok .mailed{margin:-6px 0 18px;color:rgba(255,255,255,.7);font-size:14px}
+@media(max-width:760px){.rtabs.races{grid-template-columns:1fr}.roles{grid-template-columns:1fr}.role{padding:14px 16px}}
+@media(max-width:1000px){.opts.many{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.rtabs{grid-template-columns:repeat(2,1fr)}.rtab{min-height:50px;font-size:12px;letter-spacing:.06em}.opts.many{grid-template-columns:1fr}#card .st.on .tx{display:none}#card .stepper{padding-bottom:0}#card .dot{width:34px;height:34px;font-size:13px}#card .trk{top:16px}}
+</style>
 </head>
 <body class="loading">
 <div class="preloader" id="preloader" aria-hidden="true">
@@ -475,65 +543,14 @@ document.addEventListener('DOMContentLoaded',function(){
 </div></nav>
 <section class="rh" id="reveal">
  <div class="wrap"><h1><svg viewBox="0 0 24 24"><path d="M13.5 2 5 13.5h5.5L9.5 22 19 9.5h-5.8z"/></svg>Registration</h1>
- <div class="notes"><h3><i class="tri"></i>Notes :</h3><ul>
+ <div class="notes" id="reg-notes"><h3><i class="tri"></i>Notes :</h3><ul data-dashboard-skip>
   <li>Registration is for the <b>Hill Climb Championship — Round Three.</b></li>
   <li>The deadline for registration is <b class="dl">July 29, 2026 — at 15:00</b></li></ul></div></div></section>
 <main class="rf"><div class="wrap">
-<div id="dynamic-registration"></div>
-<div class="card" id="card" style="display:none">
- <div class="stepper" id="stepper"><div class="trk"><i id="fill"></i></div><button type="button" class="st" data-i="0"><span class="dot"><b>1</b><svg viewBox="0 0 14 11" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="13"><path d="M1.5 5.5l3.8 3.8L12.5 1.5"/></svg></span><span class="tx">Competitor</span></button><button type="button" class="st" data-i="1"><span class="dot"><b>2</b><svg viewBox="0 0 14 11" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="13"><path d="M1.5 5.5l3.8 3.8L12.5 1.5"/></svg></span><span class="tx">Vehicle</span></button><button type="button" class="st" data-i="2"><span class="dot"><b>3</b><svg viewBox="0 0 14 11" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="13"><path d="M1.5 5.5l3.8 3.8L12.5 1.5"/></svg></span><span class="tx">Rounds</span></button><button type="button" class="st" data-i="3"><span class="dot"><b>4</b><svg viewBox="0 0 14 11" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="16" height="13"><path d="M1.5 5.5l3.8 3.8L12.5 1.5"/></svg></span><span class="tx">Confirm</span></button></div>
- <form id="rform" novalidate>
-  <fieldset class="step" data-i="0"><div class="sh"><span class="eb">Step 01 / 04</span><h2>Competitor Information</h2><p>Personal, licence and bank details.</p></div><div class="fg"><label class="f"><span class="lb">Full Name (Arabic)</span><input type="text" name="name_ar" dir="auto" autocomplete="off" required></label><label class="f"><span class="lb">Full Name (English)</span><input type="text" name="name_en" autocomplete="name" required></label><label class="f"><span class="lb">Nationality</span><input type="text" name="nationality"  required></label><label class="f"><span class="lb">ID / Iqama Number</span><input type="text" name="id_no" inputmode="numeric" required></label><div class="f"><span class="lb">Gender</span><div class="seg"><label><input type="radio" name="gender" value="Male" required><span>Male</span></label><label><input type="radio" name="gender" value="Female"><span>Female</span></label></div></div><label class="f"><span class="lb">Age</span><input type="number" name="age" min="10" max="99" required></label><label class="f"><span class="lb">Mobile Number</span><input type="tel" name="mobile" autocomplete="tel" required></label><label class="f"><span class="lb">E-mail Address</span><input type="email" name="email" autocomplete="email" required></label><label class="f"><span class="lb">Blood Type</span><select name="blood" required><option value="">—Please choose an option—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>O+</option><option>O-</option><option>AB+</option><option>AB-</option></select></label><label class="f"><span class="lb">Competition License Number</span><input type="text" name="license"  required></label><label class="f"><span class="lb">Issuing ASN / Federation</span><input type="text" name="federation"  required></label><div class="f full up"><span class="lb">Upload No Objection Letter (International Participants Only)</span><label class="drop"><input type="file" name="noc" accept=".pdf,.jpg,.jpeg,.png"><span class="btn">Choose file</span><span class="fn">No file chosen</span></label><ul class="hint"><li>Acceptable files ( pdf ⋅ jpg ⋅ jpeg ⋅ png )</li><li>Maximum file size 5 MB</li></ul><em class="err"></em></div><label class="f"><span class="lb">Emergency Contact Name</span><input type="text" name="em_name"  required></label><label class="f"><span class="lb">Emergency Contact Number</span><input type="tel" name="em_phone"  required></label><label class="f"><span class="lb">Bank Name</span><input type="text" name="bank"  required></label><label class="f"><span class="lb">IBAN Number</span><input type="text" name="iban" autocapitalize="characters" required></label><div class="f full up"><span class="lb">Upload IBAN Certificate <i>*</i></span><label class="drop"><input type="file" name="iban_file" accept=".pdf,.jpg,.jpeg,.png" required><span class="btn">Choose file</span><span class="fn">No file chosen</span></label><ul class="hint"><li>Acceptable files ( pdf ⋅ jpg ⋅ jpeg ⋅ png )</li><li>Maximum file size 5 MB</li></ul><em class="err"></em></div></div></fieldset><fieldset class="step" data-i="1"><div class="sh"><span class="eb">Step 02 / 04</span><h2>Vehicle Information</h2><p>The vehicle you will compete with.</p></div><div class="fg"><label class="f"><span class="lb">Vehicle Make</span><input type="text" name="v_make"  required></label><label class="f"><span class="lb">Vehicle Model</span><input type="text" name="v_model"  required></label><label class="f"><span class="lb">Year of Manufacture</span><input type="number" name="v_year" min="1950" max="2027" required></label><label class="f"><span class="lb">Plate Number</span><input type="text" name="v_plate"  required></label><label class="f"><span class="lb">Vehicle Color</span><input type="text" name="v_color"  required></label><label class="f"><span class="lb">PF Number</span><input type="text" name="pf_no"  required></label><label class="f full"><span class="lb">FIA PF-ID Certificate Number</span><input type="text" name="pf_id"  required></label><div class="f full up"><span class="lb">Upload PF Certificate <i>*</i></span><label class="drop"><input type="file" name="pf_file" accept=".pdf,.jpg,.jpeg,.png" required><span class="btn">Choose file</span><span class="fn">No file chosen</span></label><ul class="hint"><li>Acceptable files ( pdf ⋅ jpg ⋅ jpeg ⋅ png )</li><li>Maximum file size 5 MB</li></ul><em class="err"></em></div></div></fieldset><fieldset class="step" data-i="2"><div class="sh"><span class="eb">Step 03 / 04</span><h2>Registration Options</h2><p>Choose how many rounds you want to enter.</p></div><div class="fg"><div class="f full"><span class="lb">Choose Number of Rounds</span><div class="opts"><label><input type="radio" name="rounds" value="1" required><span><b>Registration for the first round only</b><em>500 SAR</em></span></label><label><input type="radio" name="rounds" value="3"><span><b>Registration for all three rounds</b><em>1500 SAR</em></span></label></div></div></div></fieldset><fieldset class="step" data-i="3"><div class="sh"><span class="eb">Step 04 / 04</span><h2>Declarations</h2><p>Review your details and confirm to submit.</p></div><div class="rev" id="rev"></div><div class="fg"><div class="chks"><label><input type="checkbox" name="d1" required><span>I confirm that all submitted information is correct.</span></label><label><input type="checkbox" name="d2" required><span>I have read and accepted the Saudi Toyota Hill Climb Championship 2026 Regulations.</span></label></div></div></fieldset>
-  <p class="stmsg" id="smsg" role="alert"></p>
-  <div class="nav"><button type="button" class="bk" id="bk"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg><span>Back</span></button><span class="cnt" id="cnt"></span><button type="button" class="nx" id="nx"><span>Continue</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
- </form>
- <div class="ok" id="ok"><div class="tick"><svg viewBox="0 0 52 52" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 27l8 8 16-17"/></svg></div><h2>Registration <span>received</span></h2><p>Thank you. Your registration details have been submitted.</p><div class="ref">Reference <b id="ref"></b></div><a class="nx" href="index.html"><span>Back to homepage</span></a></div>
-</div>
+<div class="rtabs" id="reg-tabs" role="tablist" aria-label="Races open for registration" data-noi18n></div>
+<div class="card" id="card" data-noi18n><div id="reg-app"></div><noscript><p class="loadmsg">Please enable JavaScript to complete the registration form.</p></noscript></div>
 </div></main>
-<script>
-(function(){
- var f=document.getElementById('rform'),card=document.getElementById('card'),steps=[].slice.call(f.querySelectorAll('.step')),sts=[].slice.call(document.querySelectorAll('.st')),
- N=steps.length,cur=0,maxv=0,OK=/\.(pdf|jpe?g|png)$/i,MAX=5*1024*1024,smsg=document.getElementById('smsg'),nx=document.getElementById('nx'),bk=document.getElementById('bk'),
- NAMES=['Competitor Information','Vehicle Information','Registration Options'];
- function fileMsg(c){var file=c.files[0],box=c.closest('.up');box.querySelector('.drop').classList.toggle('has',!!file);box.querySelector('.fn').textContent=file?file.name:'No file chosen';
-  if(!file)return c.required?'Please upload a file.':'';if(!OK.test(file.name))return 'Unsupported file type. Please upload a PDF, JPG, JPEG or PNG.';if(file.size>MAX)return 'File is larger than 5 MB.';return ''}
- function err(box,t){var e=box.querySelector('.err');if(!e){e=document.createElement('em');e.className='err';box.appendChild(e)}e.textContent=t;box.classList.toggle('bad',!!t)}
- function check(i){var ok=true,first=null;smsg.textContent='';
-  [].forEach.call(steps[i].querySelectorAll('.f'),function(box){var c=box.querySelector('input,select');if(!c)return;var m='';
-   if(c.type==='file')m=fileMsg(c);
-   else if(!c.checkValidity())m=c.type==='email'&&!c.validity.valueMissing?'Enter a valid e-mail address.':c.validity.valueMissing?(c.type==='radio'?'Please select an option.':(c.tagName==='SELECT'?'Please choose an option.':'This field is required.')):'Please check this value.';
-   err(box,m);if(m){ok=false;first=first||c.closest('.f')}});
-  [].forEach.call(steps[i].querySelectorAll('.chks label'),function(l){var c=l.querySelector('input'),bad=!c.checked;l.classList.toggle('bad',bad);if(bad){ok=false;smsg.textContent='Please accept the declarations to continue.'}});
-  if(!ok){var t=first||steps[i].querySelector('.chks label.bad');if(t){var y=t.getBoundingClientRect().top+scrollY-160;scrollTo({top:y,behavior:'smooth'});var inp=t.querySelector('input:not([type=file]),select');if(inp&&first)setTimeout(function(){inp.focus({preventScroll:true})},350)}card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake')}
-  return ok}
- function review(){var rv=document.getElementById('rev');rv.innerHTML='';var price='';
-  for(var si=0;si<3;si++){var box=document.createElement('div');box.className='rv';var h=document.createElement('h4');h.innerHTML='<span></span><button type="button" data-go="'+si+'">Edit</button>';h.firstChild.textContent=NAMES[si];box.appendChild(h);var dl=document.createElement('dl');
-   [].forEach.call(steps[si].querySelectorAll('.f'),function(b){var lb=b.querySelector('.lb'),c=b.querySelector('input,select');if(!lb||!c)return;var v='';
-    if(c.type==='radio'){var r=b.querySelector('input:checked');if(r){var bb=r.closest('label').querySelector('b'),em=r.closest('label').querySelector('em');v=bb?bb.textContent+' — '+em.textContent:r.value;if(em)price=em.textContent}}
-    else if(c.type==='file')v=c.files[0]?c.files[0].name:'';else v=c.value;
-    var d=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=lb.textContent.replace('*','').trim();dd.textContent=v||'—';if(!v)dd.className='na';if(b.classList.contains('full'))d.className='w';d.appendChild(dt);d.appendChild(dd);dl.appendChild(d)});
-   box.appendChild(dl);rv.appendChild(box)}
-  if(price){var t=document.createElement('div');t.className='tot';t.innerHTML='<span>Total</span><b></b>';t.lastChild.textContent=price;rv.appendChild(t)}}
- function show(i,dir){cur=i;maxv=Math.max(maxv,i);smsg.textContent='';
-  steps.forEach(function(st,k){st.classList.toggle('on',k===i);st.classList.remove('r','l');if(k===i&&dir)st.classList.add(dir)});
-  sts.forEach(function(b,k){b.classList.toggle('on',k===i);b.classList.toggle('done',k<i||(k<=maxv&&k!==i));b.disabled=k>maxv});
-  document.getElementById('fill').style.width=(i/(N-1)*100)+'%';document.getElementById('cnt').textContent='Step '+(i+1)+' of '+N;
-  bk.classList.toggle('show',i>0);nx.firstChild.textContent=i===N-1?'Submit Registration':'Continue';
-  if(i===N-1)review();if(dir)scrollTo({top:card.getBoundingClientRect().top+scrollY-110,behavior:'smooth'})}
- function next(){if(!check(cur))return;maxv=Math.max(maxv,cur+1);if(cur<N-1)show(cur+1,'r');else submit()}
- function submit(){for(var i=0;i<N;i++){if(!check(i)){show(i,'l');return}}
-  /* TODO: send new FormData(f) to the backend / form service here */
-  document.getElementById('ref').textContent='STC-HC-'+Math.random().toString(36).slice(2,8).toUpperCase();
-  f.style.display='none';document.getElementById('stepper').style.display='none';document.getElementById('ok').classList.add('show');scrollTo({top:card.getBoundingClientRect().top+scrollY-110,behavior:'smooth'})}
- nx.addEventListener('click',next);bk.addEventListener('click',function(){if(cur>0)show(cur-1,'l')});
- f.addEventListener('submit',function(e){e.preventDefault();next()});
- sts.forEach(function(b){b.addEventListener('click',function(){var i=+b.dataset.i;if(i!==cur&&i<=maxv)show(i,i>cur?'r':'l')})});
- f.addEventListener('click',function(e){var g=e.target.closest('[data-go]');if(g)show(+g.dataset.go,'l')});
- f.addEventListener('input',function(e){var b=e.target.closest('.f');if(b&&b.classList.contains('bad')&&e.target.type!=='file')err(b,'');});
- f.addEventListener('change',function(e){var c=e.target,b=c.closest('.f');if(c.type==='file'){err(b,fileMsg(c));return}if(b&&b.classList.contains('bad'))err(b,'');var l=c.closest('.chks label');if(l){l.classList.toggle('bad',!c.checked);if([].every.call(f.querySelectorAll('.chks input'),function(x){return x.checked}))smsg.textContent=''}});
- show(0,null);
-})();
-</script>
+<script src="registration-form.js?v=2"></script>
 <footer class="foot">
  <div class="fmain">
   <div class="fcard"><div class="fbg" data-img="card"></div>
@@ -929,6 +946,5 @@ addEventListener('load',full);
 })();
 
 </script>
-<script src="/registration-manager.js?v=1" defer></script>
 </body>
 </html>

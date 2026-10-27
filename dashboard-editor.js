@@ -34,7 +34,7 @@
   function textElementsIn(container) {
     return [...container.querySelectorAll(textSelector)].filter((element) => (
       element.innerText.trim()
-      && !element.closest("[data-dashboard-editor],nav,header,footer")
+      && !element.closest("[data-dashboard-editor],[data-dashboard-skip],nav,header,footer")
       && !element.parentElement?.closest(textSelector)
     ));
   }

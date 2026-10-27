@@ -10,7 +10,9 @@ import uuid
 from http.cookies import SimpleCookie
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, quote, unquote, urlsplit
+
+import registrations as reg
 
 ROOT = Path(__file__).resolve().parent
 CONTENT_ROOT = ROOT / ".dashboard-content"
@@ -24,6 +26,8 @@ BODY_LIMIT = 8 * 1024 * 1024
 UPLOAD_LIMIT = 10 * 1024 * 1024
 SESSIONS = {}
 SESSIONS_LOCK = threading.Lock()
+REGISTRATION_ROOT = ROOT / ".dashboard-registrations"
+REG_STORE = reg.LocalRegistrationStore(CONTENT_ROOT, REGISTRATION_ROOT)
 
 PAGES = [
     {"path": "index.html", "title": "Home"},
@@ -256,6 +260,40 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 if not path.is_file():
                     self.send_response(204); self.end_headers(); return
                 self.send_json(200, json.loads(path.read_text(encoding="utf-8")))
+            elif parsed.path == "/api/registration-forms":
+                self.send_json(200, reg.public_forms(REG_STORE.read_forms()))
+            elif parsed.path == "/api/registration-races":
+                self.send_json(200, reg.public_races(REG_STORE.read_races(), REG_STORE.read_forms()))
+            elif parsed.path == "/api/dashboard/registration-races":
+                if not self.require_session():
+                    return
+                self.send_json(200, {**REG_STORE.read_races(), "mail": reg.mail_status()})
+            elif parsed.path == "/api/dashboard/registration-forms":
+                if not self.require_session():
+                    return
+                self.send_json(200, REG_STORE.read_forms())
+            elif parsed.path == "/api/dashboard/registrations":
+                if not self.require_session():
+                    return
+                self.send_json(200, {"entries": REG_STORE.list_entries()})
+            elif parsed.path == "/api/dashboard/registrations/file":
+                if not self.require_session():
+                    return
+                query = parse_qs(parsed.query)
+                token = (query.get("token") or [""])[0]
+                body = REG_STORE.read_file(token) if reg.FILE_TOKEN.fullmatch(token) else None
+                if body is None:
+                    self.send_json(404, {"error": "File not found."})
+                    return
+                name = reg.download_name((query.get("name") or [""])[0], token)
+                inline = (query.get("inline") or [""])[0] == "1"
+                self.send_response(200)
+                self.send_header("Content-Type", reg.FILE_MEDIA[Path(token).suffix])
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Content-Disposition", f"{'inline' if inline else 'attachment'}; filename*=UTF-8''{quote(name)}")
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
             elif parsed.path in ("/api/results", "/api/live"):
                 results_path = CONTENT_ROOT / (RESULTS_NAME if parsed.path == "/api/results" else LIVE_NAME)
                 if not results_path.is_file():
@@ -360,6 +398,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 self.handle_results()
             elif parsed.path == "/api/dashboard/live":
                 self.handle_results(LIVE_NAME, clean_live)
+            elif parsed.path.startswith("/api/registrations/") or parsed.path.startswith("/api/dashboard/registration"):
+                self.handle_registrations(parsed)
             else:
                 self.send_json(404, {"error": "Not found."})
         except OverflowError as error:
@@ -437,6 +477,80 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         finally:
             temporary_path.unlink(missing_ok=True)
         self.send_json(200, {"ok": True, "updated": document["updated"]})
+
+    def site_url(self):
+        configured = os.environ.get("SITE_URL", "").strip()
+        if configured:
+            return configured
+        host = re.sub(r"[^A-Za-z0-9.:\-\[\]]", "", self.headers.get("Host", ""))
+        return f"{'https' if os.environ.get('DASHBOARD_HTTPS') == '1' else 'http'}://{host}" if host else ""
+
+    def handle_registrations(self, parsed):
+        """Competitor registration: public upload/submit and dashboard management."""
+        path = parsed.path
+        if path == "/api/registrations/upload":
+            query = parse_qs(parsed.query)
+            form_id, field_id = (query.get("form") or [""])[0], (query.get("field") or [""])[0]
+            if not reg.upload_allowed(REG_STORE.read_forms(), form_id, field_id):
+                self.send_json(400, {"error": "This upload is not available."})
+                return
+            body = self.read_body(reg.FILE_LIMIT)
+            extension = reg.check_upload(self.headers.get("Content-Type", ""), body)
+            token = reg.new_file_token(extension)
+            REG_STORE.save_file(token, body)
+            self.send_json(200, {"token": token, "size": len(body)})
+        elif path == "/api/registrations/submit":
+            races = REG_STORE.read_races()
+            form, entry = reg.clean_submission(REG_STORE.read_forms(), self.read_json(limit=reg.SUBMIT_LIMIT),
+                                               REG_STORE.file_exists, races)
+            REG_STORE.save_entry(entry)
+            entry["mail"] = reg.notify(entry, form, races, self.site_url())
+            REG_STORE.save_entry(entry)
+            self.send_json(200, {"ok": True, "ref": entry["ref"],
+                                 "emailed": entry["mail"]["to"] if entry["mail"]["registrant"] == "sent" else ""})
+        elif not self.require_session():
+            return
+        elif path == "/api/dashboard/registration-races":
+            document = reg.clean_races(self.read_json(limit=reg.RACES_LIMIT), REG_STORE.read_forms())
+            REG_STORE.write_races(document)
+            self.send_json(200, {"ok": True, **document})
+        elif path == "/api/dashboard/registrations/test-email":
+            data = self.read_json(limit=16 * 1024)
+            result = reg.send_messages(reg.test_message(data.get("to") if isinstance(data, dict) else ""))
+            if result.get("test") != "sent":
+                raise ValueError("E-mail is not set up on the server (SMTP_HOST …)." if result.get("test") == "not_configured"
+                                 else f"The test e-mail could not be sent: {result.get('error', 'unknown error')}")
+            self.send_json(200, {"ok": True})
+        elif path == "/api/dashboard/registrations/resend":
+            data = self.read_json(limit=64 * 1024)
+            entry = REG_STORE.get_entry(str(data.get("form", "")), str(data.get("id", ""))) if isinstance(data, dict) else None
+            if not entry:
+                self.send_json(404, {"error": "Entry not found."})
+                return
+            form = reg.find_form(REG_STORE.read_forms(), entry["form"])
+            entry["mail"] = reg.notify(entry, form, REG_STORE.read_races(), self.site_url())
+            REG_STORE.save_entry(entry)
+            self.send_json(200, {"ok": True, "entry": entry})
+        elif path == "/api/dashboard/registration-forms":
+            document = reg.clean_forms(self.read_json(limit=reg.FORMS_LIMIT))
+            REG_STORE.write_forms(document)
+            self.send_json(200, {"ok": True, "updated": document["updated"], "forms": document["forms"]})
+        elif path == "/api/dashboard/registrations/update":
+            data = self.read_json(limit=64 * 1024)
+            entry = REG_STORE.get_entry(str(data.get("form", "")), str(data.get("id", ""))) if isinstance(data, dict) else None
+            if not entry:
+                self.send_json(404, {"error": "Entry not found."})
+                return
+            REG_STORE.save_entry(reg.apply_entry_update(entry, data))
+            self.send_json(200, {"ok": True, "entry": entry})
+        elif path == "/api/dashboard/registrations/delete":
+            data = self.read_json(limit=64 * 1024)
+            items = data.get("items") if isinstance(data, dict) and isinstance(data.get("items"), list) else []
+            deleted = sum(1 for item in items[:500] if isinstance(item, dict)
+                          and REG_STORE.delete_entry(str(item.get("form", "")), str(item.get("id", ""))))
+            self.send_json(200, {"ok": True, "deleted": deleted})
+        else:
+            self.send_json(404, {"error": "Not found."})
 
     def handle_upload(self):
         if not self.require_session():
