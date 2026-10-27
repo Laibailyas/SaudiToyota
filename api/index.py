@@ -16,7 +16,8 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
-from vercel.blob import AsyncBlobClient, BlobError, list_objects
+from vercel.blob import AsyncBlobClient, list_objects
+from vercel.blob.errors import BlobError
 
 from server import CALENDAR_NAME, CALENDAR_LIMIT, clean_calendar, IMAGE_TYPES, PAGE_PATHS, PAGES, LIVE_NAME, RESULTS_LIMIT, RESULTS_NAME, ROOT, UPLOAD_LIMIT, clean_live, clean_results
 
