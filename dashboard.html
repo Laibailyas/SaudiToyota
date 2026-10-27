@@ -89,7 +89,8 @@ document.addEventListener('DOMContentLoaded',function(){
     </form>
   </main>
 
-  <main id="editor-screen" class="editor-screen" hidden>
+  <div id="registration-management-link" hidden style="position:fixed;right:14px;bottom:14px;z-index:1000"><a href="/registration-admin.html" style="display:block;background:#e91a2b;color:white;padding:15px 24px;border-radius:8px;text-decoration:none;font-weight:800;box-shadow:0 5px 25px #0009">Forms &amp; Submissions</a></div>
+<main id="editor-screen" class="editor-screen" hidden>
     <header class="toolbar">
       <a class="brand" href="/">SAUDI <strong>TOYOTA</strong> CHAMPIONSHIP</a>
       <div class="mode-switch" role="tablist" aria-label="Dashboard section">
@@ -134,5 +135,6 @@ document.addEventListener('DOMContentLoaded',function(){
     <div id="scores-layout" class="scores-layout" data-manager="scores" hidden></div>
     <div id="live-layout" class="scores-layout" data-manager="live" hidden></div>
   </main>
+<script>setInterval(()=>{const el=document.getElementById("registration-management-link");if(el)el.hidden=document.getElementById("editor-screen").hidden},600)</script>
 </body>
 </html>

@@ -1,0 +1,1201 @@
+{
+  "forms": [
+    {
+      "id": "autocross",
+      "title": "Autocross",
+      "description": "SAMF 2026 Autocross Entry Form",
+      "active": true,
+      "fields": [
+        {
+          "id": "round_event",
+          "label": "Round / Event",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "venue",
+          "label": "Venue",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competitor_name_as_on_competition_licence",
+          "label": "Competitor name (as on competition licence)",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "nationality",
+          "label": "Nationality",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no",
+          "label": "Competition licence No.",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "section": "1.  COMPETITOR",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "address",
+          "label": "Address",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "full_name_as_on_id_passport",
+          "label": "Full name (as on ID / passport)",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth",
+          "label": "Date of birth",
+          "section": "2.  DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "national_id_iqama_passport_no",
+          "label": "National ID / Iqama / Passport No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no_11",
+          "label": "Competition licence No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "issuing_asn",
+          "label": "Issuing ASN",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_13",
+          "label": "Mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city",
+          "label": "City",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_name_relationship",
+          "label": "Emergency contact – name & relationship",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_mobile",
+          "label": "Emergency contact mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "make",
+          "label": "Make",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "year_of_manufacture",
+          "label": "Year of manufacture",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "engine_capacity_cc",
+          "label": "Engine capacity (cc)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "registration_plate_no_if_road_registered",
+          "label": "Registration plate No. (if road-registered)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "pf_value_modified_cars_p1_p5",
+          "label": "Pf value – modified cars (P1–P5)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "tyre_make_size",
+          "label": "Tyre make & size",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "vehicle_owner_if_not_the_driver_name_mobile",
+          "label": "Vehicle owner – if not the driver (name & mobile)",
+          "section": "3.  VEHICLE",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "hometown",
+          "label": "Hometown",
+          "section": "4.  DRIVER PROFILE – for media and commentary (Art. 7.3)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "first_season_in_competition",
+          "label": "First season in competition",
+          "section": "4.  DRIVER PROFILE – for media and commentary (Art. 7.3)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "instagram_x_handle",
+          "label": "Instagram / X handle",
+          "section": "4.  DRIVER PROFILE – for media and commentary (Art. 7.3)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "declaration",
+          "label": "I declare that the information submitted is correct and agree to the event regulations.",
+          "section": "Declaration",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "baja",
+      "title": "Baja",
+      "description": "SAMF 2026 Baja Entry Form",
+      "active": true,
+      "fields": [
+        {
+          "id": "round_event",
+          "label": "Round / Event",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "venue",
+          "label": "Venue",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competitor_name_as_on_competition_licence",
+          "label": "Competitor name (as on competition licence)",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "nationality",
+          "label": "Nationality",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no",
+          "label": "Competition licence No.",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "section": "1.  COMPETITOR",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "address",
+          "label": "Address",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "full_name_as_on_id_passport",
+          "label": "Full name (as on ID / passport)",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth",
+          "label": "Date of birth",
+          "section": "2.  DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "national_id_iqama_passport_no",
+          "label": "National ID / Iqama / Passport No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no_11",
+          "label": "Competition licence No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "issuing_asn",
+          "label": "Issuing ASN",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_13",
+          "label": "Mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city",
+          "label": "City",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_name_relationship",
+          "label": "Emergency contact – name & relationship",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_mobile",
+          "label": "Emergency contact mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "full_name_as_on_id_passport_17",
+          "label": "Full name (as on ID / passport)",
+          "section": "3.  CO-DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth_18",
+          "label": "Date of birth",
+          "section": "3.  CO-DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "national_id_iqama_passport_no_19",
+          "label": "National ID / Iqama / Passport No.",
+          "section": "3.  CO-DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no_20",
+          "label": "Competition licence No.",
+          "section": "3.  CO-DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "issuing_asn_21",
+          "label": "Issuing ASN",
+          "section": "3.  CO-DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_22",
+          "label": "Mobile",
+          "section": "3.  CO-DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city_23",
+          "label": "City",
+          "section": "3.  CO-DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_name_relationship_24",
+          "label": "Emergency contact – name & relationship",
+          "section": "3.  CO-DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_mobile_25",
+          "label": "Emergency contact mobile",
+          "section": "3.  CO-DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "make",
+          "label": "Make",
+          "section": "4.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "year_of_manufacture",
+          "label": "Year of manufacture",
+          "section": "4.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "engine_make_type",
+          "label": "Engine – make / type",
+          "section": "4.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "registration_plate_no",
+          "label": "Registration plate No.",
+          "section": "4.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "technical_passport_no_fia_samf",
+          "label": "Technical passport No. (FIA / SAMF)",
+          "section": "4.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "tyre_make_size",
+          "label": "Tyre make & size",
+          "section": "4.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "vehicle_owner_if_not_the_driver_name_mobile",
+          "label": "Vehicle owner – if not the driver (name & mobile)",
+          "section": "4.  VEHICLE",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "team_manager_name",
+          "label": "Team manager – name",
+          "section": "5.  SERVICE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "service_vehicle_1_plate_no",
+          "label": "Service vehicle 1 – plate No.",
+          "section": "5.  SERVICE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "declaration",
+          "label": "I declare that the information submitted is correct and agree to the event regulations.",
+          "section": "Declaration",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "drift",
+      "title": "Drift",
+      "description": "SAMF 2026 Drift Entry Form",
+      "active": true,
+      "fields": [
+        {
+          "id": "round_event",
+          "label": "Round / Event",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "venue",
+          "label": "Venue",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competitor_name_as_on_competition_licence",
+          "label": "Competitor name (as on competition licence)",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "nationality",
+          "label": "Nationality",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no",
+          "label": "Competition licence No.",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "section": "1.  COMPETITOR",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "authorised_representative_name_mobile_art_12_3_1",
+          "label": "Authorised representative – name & mobile (Art. 12.3 / 18.1.3)",
+          "section": "1.  COMPETITOR",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "full_name_as_on_id_passport",
+          "label": "Full name (as on ID / passport)",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth",
+          "label": "Date of birth",
+          "section": "2.  DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "national_id_iqama_passport_no",
+          "label": "National ID / Iqama / Passport No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no_11",
+          "label": "Competition licence No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "issuing_asn",
+          "label": "Issuing ASN",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_13",
+          "label": "Mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city",
+          "label": "City",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_name_relationship",
+          "label": "Emergency contact – name & relationship",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_mobile",
+          "label": "Emergency contact mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "make",
+          "label": "Make",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "year_of_manufacture",
+          "label": "Year of manufacture",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "engine_make_type",
+          "label": "Engine – make / type",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "estimated_power_hp",
+          "label": "Estimated power (hp)",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "registration_plate_no_if_road_registered",
+          "label": "Registration plate No. (if road-registered)",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "rear_tyre_make_width_mm",
+          "label": "Rear tyre make & width (mm)",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "vehicle_owner_if_not_the_driver_name_mobile",
+          "label": "Vehicle owner – if not the driver (name & mobile)",
+          "section": "4.  VEHICLE – rear-wheel drive only (Art. 4.2)",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "hometown",
+          "label": "Hometown",
+          "section": "5.  DRIVER PROFILE – for media and commentary (Art. 7.3)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "first_season_in_competition",
+          "label": "First season in competition",
+          "section": "5.  DRIVER PROFILE – for media and commentary (Art. 7.3)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "instagram_x_handle",
+          "label": "Instagram / X handle",
+          "section": "5.  DRIVER PROFILE – for media and commentary (Art. 7.3)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "declaration",
+          "label": "I declare that the information submitted is correct and agree to the event regulations.",
+          "section": "Declaration",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "hill-climb",
+      "title": "Hill Climb",
+      "description": "SAMF 2026 Hill Climb Entry Form",
+      "active": true,
+      "fields": [
+        {
+          "id": "round_event",
+          "label": "Round / Event",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "venue",
+          "label": "Venue",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competitor_name_as_on_competition_licence",
+          "label": "Competitor name (as on competition licence)",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "nationality",
+          "label": "Nationality",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no",
+          "label": "Competition licence No.",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "section": "1.  COMPETITOR",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "address",
+          "label": "Address",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "full_name_as_on_id_passport",
+          "label": "Full name (as on ID / passport)",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth",
+          "label": "Date of birth",
+          "section": "2.  DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "national_id_iqama_passport_no",
+          "label": "National ID / Iqama / Passport No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no_11",
+          "label": "Competition licence No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "issuing_asn",
+          "label": "Issuing ASN",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_13",
+          "label": "Mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city",
+          "label": "City",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_name_relationship",
+          "label": "Emergency contact – name & relationship",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_mobile",
+          "label": "Emergency contact mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "make",
+          "label": "Make",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "year_of_manufacture",
+          "label": "Year of manufacture",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "engine_capacity_cc",
+          "label": "Engine capacity (cc)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "registration_plate_no",
+          "label": "Registration plate No.",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "pf_value_per_pf_technical_sheet",
+          "label": "Pf value (per PF Technical Sheet)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "technical_passport_homologation_no_if_any",
+          "label": "Technical passport / homologation No. (if any)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "vehicle_owner_if_not_the_driver_name_mobile",
+          "label": "Vehicle owner – if not the driver (name & mobile)",
+          "section": "3.  VEHICLE",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "declaration",
+          "label": "I declare that the information submitted is correct and agree to the event regulations.",
+          "section": "Declaration",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "karting",
+      "title": "Karting",
+      "description": "SAMF 2026 Karting Entry Form",
+      "active": true,
+      "fields": [
+        {
+          "id": "round_event",
+          "label": "Round / Event",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "venue",
+          "label": "Venue",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "full_name_as_on_id_passport",
+          "label": "Full name (as on ID / passport)",
+          "section": "1.  DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth",
+          "label": "Date of birth",
+          "section": "1.  DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "nationality",
+          "label": "Nationality",
+          "section": "1.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no",
+          "label": "Competition licence No.",
+          "section": "1.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_driver_if_18",
+          "label": "Mobile (driver, if 18+)",
+          "section": "1.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city",
+          "label": "City",
+          "section": "1.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "height_cm",
+          "label": "Height (cm)",
+          "section": "1.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "previous_karting_experience",
+          "label": "Previous karting experience",
+          "section": "1.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "full_name",
+          "label": "Full name",
+          "section": "2.  PARENT / LEGAL GUARDIAN – drivers under 18 (Art. 13)",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "relationship_to_driver",
+          "label": "Relationship to driver",
+          "section": "2.  PARENT / LEGAL GUARDIAN – drivers under 18 (Art. 13)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "section": "2.  PARENT / LEGAL GUARDIAN – drivers under 18 (Art. 13)",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "emergency_contact_name_relationship_mobile_if_di",
+          "label": "Emergency contact – name, relationship & mobile (if different)",
+          "section": "2.  PARENT / LEGAL GUARDIAN – drivers under 18 (Art. 13)",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "competitor_team_name_as_on_licence",
+          "label": "Competitor / team name (as on licence)",
+          "section": "3.  COMPETITOR / TEAM (if different from the driver or guardian)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competitor_licence_no",
+          "label": "Competitor licence No.",
+          "section": "3.  COMPETITOR / TEAM (if different from the driver or guardian)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mechanic_name",
+          "label": "Mechanic – name",
+          "section": "3.  COMPETITOR / TEAM (if different from the driver or guardian)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "chassis_make_model",
+          "label": "Chassis – make / model",
+          "section": "4.  CATEGORY AND KART (Art. 4)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "engine_no_1",
+          "label": "Engine No. 1",
+          "section": "4.  CATEGORY AND KART (Art. 4)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "helmet_make_homologation",
+          "label": "Helmet – make / homologation",
+          "section": "4.  CATEGORY AND KART (Art. 4)",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "entry_fee_per_supplementary_regulations",
+          "label": "Entry fee (per Supplementary Regulations)",
+          "section": "6.  ENTRY FEE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "declaration",
+          "label": "I declare that the information submitted is correct and agree to the event regulations.",
+          "section": "Declaration",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "time-attack",
+      "title": "Time Attack",
+      "description": "SAMF 2026 Time Attack Entry Form",
+      "active": true,
+      "fields": [
+        {
+          "id": "round_event",
+          "label": "Round / Event",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "venue",
+          "label": "Venue",
+          "section": "Event Details",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competitor_name_as_on_competition_licence",
+          "label": "Competitor name (as on competition licence)",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "nationality",
+          "label": "Nationality",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no",
+          "label": "Competition licence No.",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile",
+          "label": "Mobile",
+          "section": "1.  COMPETITOR",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "address",
+          "label": "Address",
+          "section": "1.  COMPETITOR",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "full_name_as_on_id_passport",
+          "label": "Full name (as on ID / passport)",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "date_of_birth",
+          "label": "Date of birth",
+          "section": "2.  DRIVER",
+          "type": "date",
+          "required": false
+        },
+        {
+          "id": "national_id_iqama_passport_no",
+          "label": "National ID / Iqama / Passport No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "competition_licence_no_11",
+          "label": "Competition licence No.",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "issuing_asn",
+          "label": "Issuing ASN",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "mobile_13",
+          "label": "Mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "city",
+          "label": "City",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_name_relationship",
+          "label": "Emergency contact – name & relationship",
+          "section": "2.  DRIVER",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "emergency_contact_mobile",
+          "label": "Emergency contact mobile",
+          "section": "2.  DRIVER",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "make",
+          "label": "Make",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "year_of_manufacture",
+          "label": "Year of manufacture",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "engine_capacity_cc",
+          "label": "Engine capacity (cc)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "registration_plate_no",
+          "label": "Registration plate No.",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "pf_value_per_pf_technical_sheet",
+          "label": "Pf value (per PF Technical Sheet)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "technical_passport_homologation_no_if_any",
+          "label": "Technical passport / homologation No. (if any)",
+          "section": "3.  VEHICLE",
+          "type": "text",
+          "required": false
+        },
+        {
+          "id": "vehicle_owner_if_not_the_driver_name_mobile",
+          "label": "Vehicle owner – if not the driver (name & mobile)",
+          "section": "3.  VEHICLE",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "declaration",
+          "label": "I declare that the information submitted is correct and agree to the event regulations.",
+          "section": "Declaration",
+          "type": "checkbox",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "photographer",
+      "title": "Photographer",
+      "description": "Photographer Registration",
+      "active": true,
+      "fields": [
+        {
+          "id": "full_name",
+          "label": "Full name",
+          "section": "Applicant Details",
+          "type": "text",
+          "required": true
+        },
+        {
+          "id": "email",
+          "label": "Email address",
+          "section": "Applicant Details",
+          "type": "email",
+          "required": true
+        },
+        {
+          "id": "phone",
+          "label": "Mobile number",
+          "section": "Applicant Details",
+          "type": "tel",
+          "required": true
+        },
+        {
+          "id": "organization",
+          "label": "Media organization (if applicable)",
+          "section": "Applicant Details",
+          "type": "text",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

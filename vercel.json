@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.py": {
-      "includeFiles": "{*.html,*.css,*.js,images/**,tournaments/**,Gallery/**,server.py}"
+      "includeFiles": "{*.html,*.css,*.js,images/**,tournaments/**,Gallery/**,server.py,registration-forms.json}"
     }
   },
   "rewrites": [
