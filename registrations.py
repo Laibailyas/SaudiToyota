@@ -24,6 +24,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_FORMS_PATH = ROOT / "registration-forms.json"
+DEFAULT_RACES_PATH = ROOT / "registration-races.json"
 FORMS_NAME = "registration-forms.json"
 FORMS_LIMIT = 1024 * 1024
 RACES_NAME = "registration-races.json"
@@ -280,6 +281,17 @@ def parse_races(raw):
                 return doc
         except (ValueError, UnicodeDecodeError):
             pass
+    # Seed the existing race calendar as CLOSED drafts for first-time installs.
+    # An existing saved document, including an empty one, always takes precedence.
+    try:
+        default_doc = json.loads(DEFAULT_RACES_PATH.read_text(encoding="utf-8"))
+        if isinstance(default_doc, dict) and isinstance(default_doc.get("races"), list):
+            settings = empty_races()["settings"]
+            settings.update(default_doc.get("settings") if isinstance(default_doc.get("settings"), dict) else {})
+            default_doc["settings"] = settings
+            return default_doc
+    except (OSError, ValueError, UnicodeDecodeError):
+        pass
     return empty_races()
 
 
@@ -435,11 +447,11 @@ def public_races(races_doc, forms_doc):
             continue
         roles, used = [], {}
         category = forms.get(race.get("category"))
-        if race.get("racers") and category and category.get("open", True):
+        if race.get("racers") and category and category.get("open", True) and category.get("published", True):
             roles.append("racer")
             used["racer"] = category["id"]
         photographer = forms.get(race.get("photographer_form"))
-        if race.get("photographers") and photographer and photographer.get("open", True):
+        if race.get("photographers") and photographer and photographer.get("open", True) and photographer.get("published", True):
             roles.append("photographer")
             used["photographer"] = photographer["id"]
         if not roles:
@@ -536,7 +548,7 @@ def clean_submission(doc, payload, file_exists, races_doc=None):
     form = find_form(doc, race.get("category") if role == "racer" else race.get("photographer_form"))
     if not form or form["id"] != payload.get("form"):
         raise ValueError("This registration form is not available. Please refresh the page.")
-    if not form.get("open", True):
+    if not form.get("open", True) or not form.get("published", True):
         raise ValueError("Registration for this championship is closed.")
     raw_values = dict(payload.get("values")) if isinstance(payload.get("values"), dict) else {}
     snapshot_race = race_snapshot(race, doc)
@@ -670,7 +682,7 @@ def new_file_token(extension):
 
 def upload_allowed(doc, form_id, field_id):
     form = find_form(doc, form_id)
-    if not form or not form.get("open", True):
+    if not form or not form.get("open", True) or not form.get("published", True):
         return False
     return any(field["id"] == field_id and field["type"] == "file" for _, field in all_fields(form))
 

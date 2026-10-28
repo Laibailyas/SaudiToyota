@@ -1,5 +1,27 @@
 # Saudi Toyota Championship site
 
+## CMS registration fix — October 2026
+
+This update retains the existing site design and routes. It repairs registration CMS initialization, adds starter race drafts and ships the existing official form templates.
+
+**Included on a fresh deployment:** the six SAMF 2026 championship entry forms (Karting, Autocross, Time Attack, Drift, Hill Climb, Baja) and one Photographer form, all editable from **Dashboard → Registrations → Forms**. The exact supplied DOCX originals remain in `Original-SAMF-Entry-Forms.zip`. Also included are **19 starter championship race drafts** under **Registrations → Races**, initially **closed** to prevent inadvertently accepting registrations. The race editor can open an existing race or create a new race. E-Gaming was not seeded with a registration form because no E-Gaming entry template was supplied.
+
+**To create/edit forms and fields:**
+
+1. Log in to `/dashboard`, open **Registrations → Forms**.
+2. Use **+ New form**, edit title, category and settings, and add/edit/remove/reorder steps and fields. You can duplicate or delete any form.
+3. Click **Save & publish**. Reload to verify it persists. The public page only offers registrations for open races using a published/open form.
+4. To open registration, switch to **Registrations → Races**, select a starter race or choose **+ Open registration for a race**, enter its name, category, venue and dates, tick **Registration open**, choose allowed applicant roles, then **Save & publish**.
+5. Confirm the selected race appears at `/registration.html`. Use **Entries** to view and manage public submissions.
+
+**Important for Vercel deployments:** the dashboard depends on persistent **private Vercel Blob** storage. Without it, an admin may be able to log in and read the bundled defaults but **Save & publish will not persist**. In Vercel, add a **Private Blob store** to this project, set its `BLOB_READ_WRITE_TOKEN` for Production, and set strong `ADMIN_PASSWORD` (12+ characters) and `DASHBOARD_SECRET` (32+ characters), then redeploy. Do not put actual credentials in GitHub or the ZIP. Confirm a form edit still exists after a browser refresh. SMTP credentials are separate and required for real notification emails; they are not required for saving submissions.
+
+The bundled defaults are used only if no saved registration document exists; the CMS **does not overwrite forms or races already saved in persistent storage**. If an older deployment already has a saved empty race list, you can use **+ Open registration for a race** to add races; starter drafts do not replace intentionally saved data.
+
+**QA completed against this code:** local backend API tests, mocked private-Blob Vercel API tests and headless browser CMS-click tests. Actual live production persistence, mail delivery and user-domain behavior still require checking after deployment with the real credentials and Blob store. See `REGISTRATION_FIX_QA.md` for details.
+
+---
+
 ## Run the site and content dashboard
 
 The dashboard needs the Python standard library and does not require installing packages. Start the site from the project folder in PowerShell:

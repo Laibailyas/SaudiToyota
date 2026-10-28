@@ -34,6 +34,7 @@
   const slug = (v, sep = "-") => String(v || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, sep).replace(new RegExp(`^\\${sep}+|\\${sep}+$`, "g"), "");
   const fmtDate = (ts) => ts ? new Date(ts * 1000).toLocaleString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
   const money = (n) => n == null || n === "" ? "" : `${Number(n).toLocaleString("en-US")} SAR`;
+  const freshRaceId = () => `race-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
   async function api(url, options = {}) {
     const response = await fetch(url, { credentials: "same-origin", ...options });
@@ -80,18 +81,24 @@
   async function load(force = false) {
     if (state.loaded && !force) return render();
     setStatus("Loading…");
-    try {
-      const [formsDoc, entries, racesDoc] = await Promise.all([api("/api/dashboard/registration-forms"), api("/api/dashboard/registrations"), api("/api/dashboard/registration-races")]);
-      if (!state.dirty) { state.doc = clone(formsDoc); state.saved = clone(formsDoc); }
+    const endpoints = ["/api/dashboard/registration-forms", "/api/dashboard/registrations", "/api/dashboard/registration-races"];
+    const results = await Promise.allSettled(endpoints.map((url) => api(url)));
+    const [formsResult, entriesResult, racesResult] = results;
+    // Failure to list entries must not disable the form builder or race editor.
+    if (formsResult.status === "fulfilled") {
+      if (!state.dirty) { state.doc = clone(formsResult.value); state.saved = clone(formsResult.value); }
+    }
+    if (racesResult.status === "fulfilled") {
+      const racesDoc = clone(racesResult.value);
       state.mail = racesDoc.mail || {};
       delete racesDoc.mail;
-      if (!state.racesDirty) { state.races = clone(racesDoc); state.racesSaved = clone(racesDoc); }
-      state.entries = entries.entries || [];
-      state.loaded = true;
-      setStatus(state.dirty ? "Unsaved form changes – click Save & publish." : `${state.entries.length} entr${state.entries.length === 1 ? "y" : "ies"} loaded.`, state.dirty ? "dirty" : "");
-    } catch (error) {
-      setStatus(error.message, "error");
+      if (!state.racesDirty) { state.races = racesDoc; state.racesSaved = clone(racesDoc); }
     }
+    if (entriesResult.status === "fulfilled") state.entries = entriesResult.value?.entries || [];
+    state.loaded = formsResult.status === "fulfilled" && racesResult.status === "fulfilled";
+    const failed = results.map((r, i) => r.status === "rejected" ? `${endpoints[i]}: ${r.reason?.message || "Unavailable"}` : "").filter(Boolean);
+    if (failed.length) setStatus(`Some registration data could not load. ${failed.join(" · ")} Check persistent storage configuration.`, "error");
+    else setStatus(state.dirty || state.racesDirty ? "Unsaved changes – click Save & publish." : `${state.entries.length} entr${state.entries.length === 1 ? "y" : "ies"} loaded.`, state.dirty || state.racesDirty ? "dirty" : "");
     render();
   }
   const forms = () => state.doc?.forms || [];
@@ -130,7 +137,7 @@
   const isRaceLive = (r) => r.open && (!r.deadline || new Date(`${r.deadline}:00+03:00`) > new Date());
   function raceDates(r) {
     if (!r?.date) return "";
-    const f = (d) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+    const f = (d) => new Date(`${d}T12:00:00`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
     return r.date_end && r.date_end > r.date ? `${f(r.date)} – ${f(r.date_end)}` : f(r.date);
   }
   function raceTitle(id) {
@@ -397,7 +404,7 @@
   }
   function newRace() {
     const today = new Date().toISOString().slice(0, 10);
-    return { id: `race-${Date.now().toString(36)}`, name: "", name_ar: "", location: "", location_ar: "", category: racerForms()[0]?.id || "",
+    return { id: freshRaceId(), name: "", name_ar: "", location: "", location_ar: "", category: racerForms()[0]?.id || "",
       photographer_form: photographerForms()[0]?.id || "", date: today, date_end: "", deadline: "", open: true, racers: true, photographers: true, notes: "", notes_ar: "" };
   }
   function onRaceInput(el) {
@@ -432,13 +439,14 @@
     }
   }
   function raceAction(action) {
+    if (!state.races || !state.doc) return setStatus("Race settings are not loaded yet. Refresh and check the API.", "error");
     const list = racesList();
     const r = list[state.editRace];
     if (action === "add-race") {
       if (!racerForms().length) return setStatus("Add a racer form under Forms first.", "error");
       list.unshift(newRace()); state.editRace = 0;
     } else if (action === "dup-race" && r) {
-      list.splice(state.editRace + 1, 0, { ...clone(r), id: `race-${Date.now().toString(36)}`, name: `${r.name} (copy)`, open: false }); state.editRace += 1;
+      list.splice(state.editRace + 1, 0, { ...clone(r), id: freshRaceId(), name: `${r.name} (copy)`, open: false }); state.editRace += 1;
     } else if (action === "del-race" && r) {
       const n = state.entries.filter((e) => e.race?.id === r.id).length;
       if (!window.confirm(`Delete "${r.name || "this race"}"?${n ? ` Its ${n} entries stay available under Entries.` : ""} The change goes live when you save.`)) return;
@@ -483,7 +491,7 @@
       <div class="race-grid">
         ${inp("Title / category name (English)", "title", form.title, 'maxlength="80"')}
         ${inp("Title / category name (Arabic)", "title_ar", form.title_ar, 'dir="rtl" maxlength="80"')}
-        ${inp("Form id (used in the link ?form=)", "id", form.id, 'maxlength="40"')}
+        ${inp("Form id (unique; changing after registrations may disconnect existing races)", "id", form.id, 'maxlength="40"')}
         ${inp("Reference prefix", "ref_prefix", form.ref_prefix, 'maxlength="6"')}
         <label class="span-2">Championship heading (English)<input class="field" data-fk="heading" value="${val(form.heading)}"></label>
         <label class="span-2">Championship heading (Arabic)<input class="field" dir="rtl" data-fk="heading_ar" value="${val(form.heading_ar)}"></label>
@@ -720,6 +728,7 @@
   function structural(action, el) {
     const form = currentForm();
     const list = forms();
+    if (!state.doc) return setStatus("Forms are not loaded yet. Refresh after checking the API.", "error");
     switch (action) {
       case "add-form": list.push(newForm()); state.editForm = list.length - 1; state.openField = null; break;
       case "dup-form": {
