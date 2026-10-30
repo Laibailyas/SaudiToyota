@@ -345,6 +345,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 selected_path = ROOT.joinpath(*relative_path.split("/"))
             try:
                 html = selected_path.read_text(encoding="utf-8-sig")
+                if relative_path == reg.REG_PAGE and selected_path != ROOT / reg.REG_PAGE:
+                    html = reg.fresh_registration_page(html, (ROOT / reg.REG_PAGE).read_text(encoding="utf-8-sig"))
             except OSError:
                 self.send_error(404, "Page not found.")
                 return
@@ -353,6 +355,22 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 html = re.sub(r"</body\s*>", script + "</body>", html, count=1, flags=re.IGNORECASE)
             else:
                 html += script
+            body = html.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        if relative_path == reg.REG_PAGE and (CONTENT_ROOT / reg.REG_PAGE).is_file():
+            try:
+                html = reg.fresh_registration_page((CONTENT_ROOT / reg.REG_PAGE).read_text(encoding="utf-8-sig"),
+                                                   (ROOT / reg.REG_PAGE).read_text(encoding="utf-8-sig"))
+            except OSError:
+                self.send_error(404, "Page not found.")
+                return
             body = html.encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")

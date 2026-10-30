@@ -45,6 +45,7 @@
       category: "Category", location: "Location", date: "Date", deadline: "Registration closes", ksa: "KSA time",
       pickRole: "Choose how you want to register to open the form.", emailed: "A confirmation e-mail has been sent to {e}.",
       notes: "Notes :",
+      champReg: "Championship Registration", season: "2026 Season", seasonSub: "Enter the round and venue in the form",
     },
     ar: {
       loading: "جارٍ تحميل نماذج التسجيل…", loadFail: "تعذر تحميل نماذج التسجيل. يرجى تحديث الصفحة.",
@@ -71,6 +72,7 @@
       category: "الفئة", location: "الموقع", date: "التاريخ", deadline: "يُغلق التسجيل", ksa: "بتوقيت السعودية",
       pickRole: "اختر نوع التسجيل لفتح النموذج.", emailed: "تم إرسال رسالة تأكيد إلى {e}.",
       notes: "ملاحظات :",
+      champReg: "التسجيل في البطولة", season: "موسم 2026", seasonSub: "أدخل الجولة والموقع في النموذج",
     },
   };
   function t(key, vars) {
@@ -417,10 +419,11 @@
       v.refresh();
     });
     function lockRaceFields() {
+      if (race.general) return; /* championship entry: the registrant types the round / venue / dates */
       Object.keys(RACE_FIELDS).forEach(function (id) {
         var input = f.querySelector('input[name="' + id + '"]');
         if (!input) return;
-        input.value = (AR && race[RACE_FIELDS[id] + "_ar"]) || race[RACE_FIELDS[id]] || "";
+        input.value = L(race, RACE_FIELDS[id]);
         input.readOnly = true;
         input.closest("[data-id]").classList.add("locked");
       });
@@ -470,18 +473,17 @@
     lines.forEach(function (line) { ul.appendChild(h("li", { text: line })); });
   }
   function meta(race) {
+    if (race.general) return [L(race, "category_title"), t("season"), t("seasonSub")].join(" · ");
     return [L(race, "category_title"), L(race, "location"), L(race, "date_label")].filter(Boolean).join(" · ");
   }
   function renderRaces() {
     tabsEl.textContent = "";
-    tabsEl.classList.add("races");
+    tabsEl.classList.remove("races");
     tabsEl.setAttribute("aria-label", t("chooseRace"));
+    /* Simple championship tabs: just the name (Karting, Autocross, Time Attack, Drift, Hill Climb, Baja). */
     races.forEach(function (race) {
-      var b = h("button", { type: "button", role: "tab", class: "rtab rcard", "data-race": race.id, "aria-selected": "false", style: "--tc:" + (race.color || "#e8202e") }, [
-        h("span", { class: "rc-cat" }, [h("span", { class: "rtab-dot" }), L(race, "category_title")]),
-        h("strong", { class: "rc-name", text: L(race, "name") }),
-        h("span", { class: "rc-meta", text: [L(race, "location"), L(race, "date_label")].filter(Boolean).join(" · ") }),
-        L(race, "deadline_label") ? h("small", { class: "rc-dl", text: t("deadline") + " " + L(race, "deadline_label") }) : null]);
+      var b = h("button", { type: "button", role: "tab", class: "rtab", "data-race": race.id, "aria-selected": "false", style: "--tc:" + (race.color || "#e8202e") }, [
+        h("span", { class: "rtab-dot" }), L(race, "category_title")]);
       b.addEventListener("click", function () { selectRace(race.id, null); });
       tabsEl.appendChild(b);
     });
@@ -500,17 +502,16 @@
     active = race.id; activeRole = null;
     [].forEach.call(tabsEl.children, function (b) {
       var on = b.getAttribute("data-race") === race.id;
-      b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1;
+      b.classList.toggle("on", on); b.setAttribute("aria-selected", String(on));
     });
     Object.keys(views).forEach(function (k) { views[k].root.hidden = true; });
     var old = host.querySelector(".racehead"); if (old) old.remove();
-    var head = h("div", { class: "racehead" }, [
-      h("div", { class: "fhead" }, [h("span", { class: "eb", text: t("raceReg") }), h("strong", { text: L(race, "name") }),
-        h("span", { class: "rmeta", text: meta(race) })]),
-      h("div", { class: "rolepick" }, [h("span", { class: "lb", text: t("registerAs") }),
-        h("div", { class: "roles" + (race.roles.length === 1 ? " one" : "") }, race.roles.map(function (r) { return roleCard(race, r); })),
-        h("p", { class: "rolehint", text: t("pickRole") })])]);
-    host.insertBefore(head, host.firstChild);
+    if (!race.general) { /* a race the organiser opened: show its name, venue and dates above the form */
+      var head = h("div", { class: "racehead" }, [
+        h("div", { class: "fhead" }, [h("span", { class: "eb", text: t("raceReg") }), h("strong", { text: L(race, "name") }),
+          h("span", { class: "rmeta", text: meta(race) })])]);
+      host.insertBefore(head, host.firstChild);
+    }
     document.getElementById("card").style.setProperty("--fc", race.color || "#e8202e");
     setNotes(race, null);
     var want = role && race.roles.indexOf(role) >= 0 ? role : (race.roles.length === 1 ? race.roles[0] : null);
@@ -554,9 +555,19 @@
     }
     return { race: races[0] && races[0].id, role: q.role };
   }
+  /* Built-in copy of the SAMF 2026 entry forms (registration-data.js). Used when the API cannot be reached
+     (page opened as a file, static hosting, backend not deployed yet). Whenever the backend answers, its data
+     is used as-is, so adding, editing, hiding or deleting a form in the dashboard always shows on the page. */
+  function fallback() {
+    var d = window.STC_REG_FALLBACK;
+    return d && d.races && d.races.length ? JSON.parse(JSON.stringify(d)) : null;
+  }
   function load() {
+    if (location.protocol === "file:") return Promise.resolve(fallback());
     return fetch("/api/registration-races", { cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); });
+      .then(function (r) { if (!r.ok) throw new Error(); return r.json(); })
+      /* The backend answered: show exactly what the dashboard has published, even when that is nothing. */
+      .catch(function (e) { var f = fallback(); if (f) return f; throw e; });
   }
   function start() {
     AR = document.documentElement.getAttribute("lang") === "ar";
@@ -565,7 +576,8 @@
     load().then(function (doc) {
       forms = (doc && doc.forms) || [];
       races = ((doc && doc.races) || []).filter(function (r) {
-        r.roles = (r.roles || []).filter(function (role) { var f = formById(r.forms && r.forms[role]); return f && f.steps && f.steps.length; });
+        /* This page is for racers only; photographers register on photographer.html. */
+        r.roles = (r.roles || []).filter(function (role) { var f = formById(r.forms && r.forms[role]); return role === "racer" && f && f.steps && f.steps.length; });
         return r.roles.length;
       });
       host.textContent = "";

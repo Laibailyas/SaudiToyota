@@ -366,7 +366,7 @@
       main.innerHTML = `<div class="race-form-head"><div><span class="eyebrow">RACES</span><h2>Race registration</h2>
         <p class="field-hint">Open registration for a race: enter the race name, location and category. Visitors then choose to register as a racer or a photographer.</p></div>
         <div class="race-actions">${actions}</div></div>
-        <div class="race-empty"><div><h2>No races open yet</h2><p>The registration page shows “Registration is not open” until you open a race.</p><button type="button" class="primary" data-a="add-race">+ Open registration for a race</button></div></div>
+        <div class="race-empty"><div><h2>Choose a race to edit</h2><p>Forms ticked “Show on registration page” are already live as 2026 championship entries. Open a race to give that category a race-specific entry (round, venue and dates filled in automatically).</p><button type="button" class="primary" data-a="add-race">+ Open registration for a race</button></div></div>
         ${mailPanel()}`;
       return;
     }
@@ -461,7 +461,7 @@
     side.innerHTML = `<div class="race-items">${forms().map((f, i) => `
       <div class="reg-form-item${state.editForm === i ? " on" : ""}">
         <button type="button" class="race-item" data-edit-form="${i}"><strong><i class="reg-dot" style="background:${esc(f.color)}"></i>${esc(f.title)}</strong>
-          <span>${f.role === "photographer" ? "Photographer" : "Racer"} · ${f.steps.length} steps · ${inputFields(f).length} fields${f.open === false ? ' · <span class="draft">closed</span>' : ""}</span></button>
+          <span>${f.role === "photographer" ? "Photographer" : "Racer"} · ${f.steps.length} steps · ${inputFields(f).length} fields${f.open === false ? ' · <span class="draft">closed</span>' : (f.role !== "photographer" && f.published !== false && f.listed !== false ? ' · <span class="reg-live">on website</span>' : "")}</span></button>
         <div class="row-acts"><button type="button" data-a="form-up" data-i="${i}" title="Move tab left" aria-label="Move up">↑</button><button type="button" data-a="form-down" data-i="${i}" title="Move tab right" aria-label="Move down">↓</button></div>
       </div>`).join("")}</div>
       <button type="button" data-a="add-form">+ New form</button>
@@ -500,7 +500,7 @@
         <label>Colour<input class="field reg-color" type="color" data-fk="color" value="${val(form.color)}"></label>
         <label>Form type<select class="field" data-fk="role"><option value="racer"${form.role !== "photographer" ? " selected" : ""}>Racer (race category)</option><option value="photographer"${form.role === "photographer" ? " selected" : ""}>Photographer</option></select></label>
         <label class="check"><input type="checkbox" data-fk="open"${form.open !== false ? " checked" : ""}> Accepting registrations</label>
-        <span></span>
+        ${form.role !== "photographer" ? `<label class="check" title="Shows this form as a 2026 championship entry on /registration.html even when no race of this category is open. When a race is opened, the race entry replaces it."><input type="checkbox" data-fk="listed"${form.listed !== false ? " checked" : ""}> Show on registration page (no open race needed)</label>` : "<span></span>"}
         <label class="span-2">Message when closed (English)<input class="field" data-fk="closed_message" value="${val(form.closed_message)}" placeholder="Registration for this championship is currently closed."></label>
         <label class="span-2">Message when closed (Arabic)<input class="field" dir="rtl" data-fk="closed_message_ar" value="${val(form.closed_message_ar)}" placeholder="التسجيل في هذه البطولة مغلق حالياً."></label>
       </div>
@@ -594,7 +594,7 @@
     const taken = new Set(forms().map((f) => f.id));
     return {
       id: uniqueId("new-form", taken, "-"), title: "New form", title_ar: "", role: "racer", color: "#E8202E", ref_prefix: "NEW",
-      heading: "", heading_ar: "", notes: "", notes_ar: "", closed_message: "", closed_message_ar: "", published: true, open: true,
+      heading: "", heading_ar: "", notes: "", notes_ar: "", closed_message: "", closed_message_ar: "", published: true, open: true, listed: true,
       steps: [
         { id: "details", title: "Your Details", title_ar: "بياناتك", short: "Details", short_ar: "البيانات", subtitle: "", subtitle_ar: "", fields: [
           { id: "full_name", type: "text", label: "Full name", label_ar: "الاسم الكامل", required: true, width: "full" },
@@ -619,12 +619,12 @@
     if (!form) return;
     if (el.dataset.fk) {
       const k = el.dataset.fk;
-      if (k === "published" || k === "open") form[k] = el.checked;
+      if (k === "published" || k === "open" || k === "listed") form[k] = el.checked;
       else if (k === "role") form.role = el.value === "photographer" ? "photographer" : "racer";
       else if (k === "id") form.id = slug(el.value).slice(0, 40);
       else if (k === "ref_prefix") form.ref_prefix = el.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
       else form[k] = el.value;
-      if (k === "title" || k === "published" || k === "open" || k === "color" || k === "role") renderFormsSide();
+      if (k === "title" || k === "published" || k === "open" || k === "listed" || k === "color" || k === "role") renderFormsSide();
       if (k === "title") main.querySelector(".race-form-head h2").textContent = form.title;
       return markDirty();
     }

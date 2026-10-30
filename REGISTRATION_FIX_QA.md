@@ -1,3 +1,12 @@
+# Update — 30 October 2026: SAMF forms live on the registration page
+
+- **Cause:** `/registration.html` only listed forms attached to an *open race*, and all 19 seeded races are closed, so the page said "Registration is not open" even though the 6 SAMF forms were published in the CMS.
+- **Fix:** every published + open racer form (Karting, Autocross, Time Attack, Drift, Hill Climb, Baja) now shows as a **2026 championship entry** with Racer and Photographer options. The registrant types the round / venue / dates. Works with the existing stored Blob data — no re-seed needed.
+- When the admin opens a race of a category, that race's entry replaces the general one for that category (round/venue/dates locked automatically).
+- New CMS control: Forms → *Show on registration page (no open race needed)*. Untick to hide a form's general entry. Forms list shows "on website".
+- **Language:** race names/locations now have Arabic (seed filled + automatic fallback when the Arabic field is empty); server validation errors come back in the visitor's language. Only brand names/acronyms (SKC, IAME, ROTAX, PDF) stay Latin in Arabic mode.
+- Tested: public API, Arabic/English rendering (Playwright, no JS errors), bilingual errors, valid submission on a championship entry, and race-opening override.
+
 # Saudi Toyota Championship — Registration CMS fix & QA
 
 **Updated:** 28 October 2026

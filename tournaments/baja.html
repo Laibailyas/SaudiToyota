@@ -1765,6 +1765,12 @@ html[dir=rtl] .bj-mt i:after{transform-origin:right}html[dir=rtl] .bj-bar{transf
 html[dir=rtl] .bj-t h2{line-height:1.2}
 html[dir=rtl] .bj-hud b{font-family:Montserrat,Arial,sans-serif!important}
 @media(max-width:640px){html[dir=rtl] .bj-ch{right:14px}html[dir=rtl] .bj-pg{left:14px}}
+/* Jeddah Rally 2026 event logo — local to the Jeddah Baja section. */
+.bj-identity{display:flex;flex-direction:column;align-items:flex-end;gap:10px;min-width:0}
+.bj-event-logo{display:block;width:clamp(148px,12vw,204px);max-width:100%;height:auto;padding:5px;border-radius:9px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.24);object-fit:contain;transition:opacity .35s ease,transform .35s ease,visibility .35s}
+@media(max-width:640px){.bj-identity{gap:0}.bj-event-logo{width:clamp(104px,29vw,132px);padding:3px;border-radius:7px}}
+.bj:not(.on3d) .bj-identity{align-items:flex-start}
+html[dir=rtl] .bj-identity{align-items:flex-start}
 </style>
 <section class="bj" id="jeddah" aria-labelledby="bjH">
  <div class="bj-pin" id="bjPin">
@@ -1782,7 +1788,7 @@ html[dir=rtl] .bj-hud b{font-family:Montserrat,Arial,sans-serif!important}
   <div class="bj-lines" id="bjLines" aria-hidden="true"></div>
   <div class="bj-vig" aria-hidden="true"></div>
   <div class="bj-ui">
-   <div class="bj-top"><p class="bj-lab">Championship Round</p><span class="bj-geo">21.54° N 39.17° E</span></div>
+   <div class="bj-top"><p class="bj-lab">Championship Round</p><div class="bj-identity"><span class="bj-geo">21.54° N 39.17° E</span><img class="bj-event-logo" src="../images/jeddah-rally-2026.jpg" alt="Jeddah Rally 2026 Toyota" loading="eager" decoding="async"></div></div>
    <div class="bj-t"><h2 id="bjH"><span class="j" id="bjJ" aria-label="Jeddah"><span style="--i:0">J</span><span style="--i:1">E</span><span style="--i:2">D</span><span style="--i:3">D</span><span style="--i:4">A</span><span style="--i:5">H</span></span><span class="s">Toyota Baja</span></h2><span class="bj-scroll"><i></i>Scroll to ride the stage</span></div>
    <div class="bj-ch" id="bjCh">
     <div class="bj-c" data-c="1"><div class="k"><b>01</b>The Round</div><h3>Leading Drivers <span>&amp; Co-drivers</span></h3>

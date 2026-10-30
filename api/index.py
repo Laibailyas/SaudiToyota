@@ -598,6 +598,8 @@ async def serve_site_path(request: Request, path: str):
                     if content is not None
                     else file_path.read_text(encoding="utf-8-sig")
                 )
+                if content is not None and relative_path == reg.REG_PAGE:
+                    html = reg.fresh_registration_page(html, file_path.read_text(encoding="utf-8-sig"))
                 html = inject_editor_script(html, relative_path)
             except (BlobError, StorageUnavailableError):
                 logger.exception("Could not load saved page content for editor preview.")
@@ -612,7 +614,10 @@ async def serve_site_path(request: Request, path: str):
             logger.exception("Could not load saved page content.")
             return Response("Page content is temporarily unavailable.", status_code=503)
         if content is not None:
-            return HTMLResponse(content.decode("utf-8-sig"), headers={"Cache-Control": "no-store"})
+            html = content.decode("utf-8-sig")
+            if relative_path == reg.REG_PAGE:
+                html = reg.fresh_registration_page(html, file_path.read_text(encoding="utf-8-sig"))
+            return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
     try:
         file_path = (ROOT / relative_path).resolve()

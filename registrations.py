@@ -209,6 +209,8 @@ def clean_forms(doc):
             "closed_message": text(raw.get("closed_message"), 500), "closed_message_ar": text(raw.get("closed_message_ar"), 500),
             "published": raw.get("published") is not False,
             "open": raw.get("open") is not False,
+            # Shown on the public registration page as a championship entry even when no race is open.
+            "listed": raw.get("listed") is not False,
             "steps": [],
         }
         steps = raw.get("steps")
@@ -427,22 +429,105 @@ def clean_races(doc, forms_doc):
     }
 
 
+# Arabic for the race names / locations of the seeded calendar, used when the organiser left the Arabic empty,
+# so the Arabic page never shows English race text.
+AR_WORDS = [
+    ("QUALIFYING RACE", "سباق التأهيل"), ("TIME ATTACK", "تحدي الوقت"), ("HILL CLIMB", "صعود الهضبة"),
+    ("AUTOCROSS", "الأوتوكروس"), ("KARTING", "الكارتينج"), ("DRIFT", "الدريفت"), ("BAJA", "الباها"),
+    ("ROUND", "الجولة"), ("FINAL", "النهائي"), ("RALLY", "رالي"), ("AL-AHSA", "الأحساء"), ("JEDDAH", "جدة"),
+    ("QASSIM", "القصيم"), ("HAIL", "حائل"), ("RIYADH", "الرياض"), ("TABUK", "تبوك"), ("DAMMAM", "الدمام"),
+]
+AR_LOCATIONS = {
+    "al sahfa - muhammadiyah": "الصحفة - المحمدية", "almeghawat": "المغواط",
+    "formula 1 parking, king abdulaziz road": "مواقف الفورمولا 1، طريق الملك عبدالعزيز",
+    "fun xtreme circiut": "حلبة فن إكستريم", "fun xtreme circuit": "حلبة فن إكستريم",
+    "jcc karting circuit": "حلبة جدة للكارتينج (JCC)", "jeddah cournich circuit": "حلبة كورنيش جدة",
+    "jeddah corniche circuit": "حلبة كورنيش جدة", "mahara": "مهارة",
+    "prince abdullah bin jalawi stadium parking": "مواقف ملعب الأمير عبدالله بن جلوي", "qassim": "القصيم",
+    "tbc": "يُحدد لاحقاً",
+}
+
+
+def arabic_race_name(name):
+    """Best-effort Arabic for names like 'DRIFT – JEDDAH ROUND 3'. Returns '' when a word is unknown."""
+    rest = str(name or "").upper()
+    for en, ar in AR_WORDS:
+        rest = re.sub(r"(?<![A-Z])" + re.escape(en) + r"(?![A-Z])", "\x00" + ar + "\x00", rest)
+    if re.search(r"[A-Z]", rest):
+        return ""
+    out = re.sub(r"\s+", " ", rest.replace("\x00", " ")).strip()
+    out = re.sub(r"([\u0600-\u06FF-]+) رالي", r"رالي \1", out)  # 'HAIL RALLY' -> 'رالي حائل'
+    return re.sub(r"([\u0600-\u06FF-]+) الجولة (\d+)", r"الجولة \2 – \1", out)  # 'JEDDAH ROUND 3' -> 'الجولة 3 – جدة'
+
+
+def arabic_location(location):
+    return AR_LOCATIONS.get(re.sub(r"\s+", " ", str(location or "")).strip().lower(), "")
+
+
 def race_snapshot(race, forms_doc):
     category = find_form(forms_doc, race.get("category")) or {}
     return {
-        "id": race["id"], "name": race["name"], "name_ar": race.get("name_ar", ""),
-        "location": race["location"], "location_ar": race.get("location_ar", ""),
+        "id": race["id"], "name": race["name"], "name_ar": race.get("name_ar") or arabic_race_name(race["name"]),
+        "location": race["location"], "location_ar": race.get("location_ar") or arabic_location(race["location"]),
         "category": race["category"], "category_title": category.get("title") or race["category"],
         "category_title_ar": category.get("title_ar", ""),
         "date": race.get("date", ""), "date_end": race.get("date_end", ""), "date_label": date_label(race),
     }
 
 
+CHAMPIONSHIP_PREFIX = "championship-"
+REG_PAGE = "registration.html"
+_REG_START, _REG_END = '<div class="notes" id="reg-notes"', '<footer class="foot">'
+
+
+def fresh_registration_page(saved_html, current_html):
+    """A copy of registration.html saved from the page editor keeps the organiser's text edits, but its
+    registration block (notes, race cards, form and the form script) is always taken from the current file,
+    so an old saved copy can never hide the forms or run an outdated script."""
+    a, b = saved_html.find(_REG_START), saved_html.find(_REG_END)
+    c, d = current_html.find(_REG_START), current_html.find(_REG_END)
+    if min(a, b, c, d) < 0 or b < a or d < c:
+        return saved_html
+    return saved_html[:a] + current_html[c:d] + saved_html[b:]
+
+
+def championship_races(races_doc, forms_doc):
+    """A standing entry for every published, open, listed racer form (the SAMF 2026 entry forms) whose
+    category has no race open right now, so the forms are on the registration page even before races open.
+    The registrant fills in the round / venue / date fields of the form themselves."""
+    open_categories = {r.get("category") for r in races_doc.get("races", []) if race_is_open(r)}
+    photographers = [f for f in forms_doc.get("forms", []) if form_role(f) == "photographer"
+                     and f.get("published", True) and f.get("open", True)]
+    out = []
+    for form in forms_doc.get("forms", []):
+        if (form_role(form) != "racer" or not form.get("published", True) or not form.get("open", True)
+                or form.get("listed") is False or form.get("id") in open_categories):
+            continue
+        out.append({
+            "id": CHAMPIONSHIP_PREFIX + form["id"], "general": True,
+            "name": form.get("heading") or form["title"], "name_ar": form.get("heading_ar") or form.get("title_ar", ""),
+            "location": "", "location_ar": "", "category": form["id"],
+            "photographer_form": photographers[0]["id"] if photographers else "",
+            "date": "", "date_end": "", "deadline": "", "open": True,
+            "racers": True, "photographers": bool(photographers), "notes": "", "notes_ar": "",
+        })
+    return out
+
+
+def find_race(races_doc, forms_doc, race_id):
+    """A saved race, or the standing championship entry of a form (see championship_races)."""
+    for race in races_doc.get("races", []):
+        if race.get("id") == race_id:
+            return race
+    return next((r for r in championship_races(races_doc, forms_doc) if r["id"] == race_id), None)
+
+
 def public_races(races_doc, forms_doc):
-    """What the registration page needs: races that are open now and the forms they use."""
+    """What the registration page needs: races that are open now (plus the standing championship
+    entries of published forms with no open race) and the forms they use."""
     forms = {f.get("id"): f for f in forms_doc.get("forms", [])}
     races, needed = [], []
-    for race in races_doc.get("races", []):
+    for race in races_doc.get("races", []) + championship_races(races_doc, forms_doc):
         if not race_is_open(race):
             continue
         roles, used = [], {}
@@ -464,9 +549,11 @@ def public_races(races_doc, forms_doc):
             "deadline": race.get("deadline", ""), "deadline_label": deadline_label(race),
             "deadline_label_ar": deadline_label(race, ar=True),
             "notes": race.get("notes", ""), "notes_ar": race.get("notes_ar", ""),
+            "general": bool(race.get("general")),
         })
         races.append(item)
-    races.sort(key=lambda r: (r.get("date") or "9999", r["name"]))
+    order = {f.get("id"): i for i, f in enumerate(forms_doc.get("forms", []))}
+    races.sort(key=lambda r: (r["general"], r.get("date") or "9999", order.get(r["category"], 99), r["name"]))
     return {"version": 1, "races": races, "forms": [forms[fid] for fid in needed]}
 
 
@@ -537,23 +624,36 @@ def clean_submission(doc, payload, file_exists, races_doc=None):
     if not isinstance(payload, dict):
         raise ValueError("Invalid registration.")
     races_doc = races_doc or empty_races()
-    race = next((r for r in races_doc.get("races", []) if r.get("id") == payload.get("race")), None)
+    ar = payload.get("lang") == "ar"
+    msg = lambda en, a: a if ar else en
+    race = find_race(races_doc, doc, payload.get("race"))
     if not race:
-        raise ValueError("Please choose the race you are registering for.")
+        raise ValueError(msg("Please choose the race you are registering for.", "يرجى اختيار السباق الذي تريد التسجيل فيه."))
     if not race_is_open(race):
-        raise ValueError("Registration for this race is closed.")
+        raise ValueError(msg("Registration for this race is closed.", "التسجيل في هذا السباق مغلق."))
     role = payload.get("role")
     if role not in ROLES or not race.get(f"{role}s"):
-        raise ValueError("This registration type is not available for this race.")
+        raise ValueError(msg("This registration type is not available for this race.", "نوع التسجيل هذا غير متاح لهذا السباق."))
     form = find_form(doc, race.get("category") if role == "racer" else race.get("photographer_form"))
     if not form or form["id"] != payload.get("form"):
-        raise ValueError("This registration form is not available. Please refresh the page.")
+        raise ValueError(msg("This registration form is not available. Please refresh the page.",
+                             "نموذج التسجيل هذا غير متاح. يرجى تحديث الصفحة."))
     if not form.get("open", True) or not form.get("published", True):
-        raise ValueError("Registration for this championship is closed.")
+        raise ValueError(msg("Registration for this championship is closed.", "التسجيل في هذه البطولة مغلق حالياً."))
     raw_values = dict(payload.get("values")) if isinstance(payload.get("values"), dict) else {}
     snapshot_race = race_snapshot(race, doc)
-    for fid, key in RACE_FIELD_MAP.items():
-        raw_values[fid] = snapshot_race.get(key, "")
+    if race.get("general"):
+        # Championship entry: the registrant typed the round / venue / dates; keep them on the entry's race.
+        snapshot_race["general"] = True
+        for fid, key in RACE_FIELD_MAP.items():
+            typed = text(raw_values.get(fid), 160)
+            if typed and key != "name":
+                snapshot_race[key] = typed
+        if text(raw_values.get("round"), 160):
+            snapshot_race["round"] = text(raw_values.get("round"), 160)
+    else:
+        for fid, key in RACE_FIELD_MAP.items():
+            raw_values[fid] = snapshot_race.get(key, "")
     raw_files = payload.get("files") if isinstance(payload.get("files"), dict) else {}
     values = {}
     for _, field in all_fields(form):
@@ -574,38 +674,38 @@ def clean_submission(doc, payload, file_exists, races_doc=None):
         fid, kind = field["id"], field["type"]
         if kind in ("heading", "note") or not shown.get(fid):
             continue
-        label = field["label"][:120]
+        label = ((ar and field.get("label_ar")) or field["label"])[:120]
         if kind == "file":
             ref = raw_files.get(fid)
             if isinstance(ref, dict) and FILE_TOKEN.fullmatch(str(ref.get("token", ""))):
                 if not file_exists(ref["token"]):
-                    errors.append(f"{label}: the uploaded file was not found, please upload it again.")
+                    errors.append(f"{label}: " + msg("the uploaded file was not found, please upload it again.", "لم يتم العثور على الملف المرفوع، يرجى رفعه مرة أخرى."))
                     continue
                 name = re.sub(r"[\\/\x00-\x1f]", "_", text(ref.get("name"), 160)) or ref["token"]
                 files[fid] = {"token": ref["token"], "name": name, "size": int(number(ref.get("size")) or 0)}
             elif field.get("required"):
-                errors.append(f"{label}: please upload a file.")
+                errors.append(f"{label}: " + msg("please upload a file.", "يرجى رفع ملف."))
             continue
         value = values.get(fid)
         if is_empty(value):
             if field.get("required"):
-                errors.append(f"{label}: this field is required.")
+                errors.append(f"{label}: " + msg("this field is required.", "هذا الحقل مطلوب."))
             continue
         if kind == "email" and not EMAIL.fullmatch(value):
-            errors.append(f"{label}: enter a valid e-mail address.")
+            errors.append(f"{label}: " + msg("enter a valid e-mail address.", "يرجى إدخال بريد إلكتروني صحيح."))
         elif kind == "tel" and not PHONE.fullmatch(value):
-            errors.append(f"{label}: enter a valid phone number.")
+            errors.append(f"{label}: " + msg("enter a valid phone number.", "يرجى إدخال رقم جوال صحيح."))
         elif kind == "number":
             parsed = number(value)
             if parsed is None or ("min" in field and parsed < field["min"]) or ("max" in field and parsed > field["max"]):
-                errors.append(f"{label}: please check this value.")
+                errors.append(f"{label}: " + msg("please check this value.", "يرجى التحقق من هذه القيمة."))
         elif kind == "date":
             try:
                 date.fromisoformat(value)
             except ValueError:
-                errors.append(f"{label}: enter a valid date.")
+                errors.append(f"{label}: " + msg("enter a valid date.", "يرجى إدخال تاريخ صحيح."))
         elif kind in ("select", "radio") and value not in {o["value"] for o in field.get("options", [])}:
-            errors.append(f"{label}: please select an option.")
+            errors.append(f"{label}: " + msg("please select an option.", "يرجى اختيار أحد الخيارات."))
         data[fid] = value
     if errors:
         raise ValueError(" ".join(errors[:6]))
