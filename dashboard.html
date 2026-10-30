@@ -34,7 +34,7 @@ nav .dd .sub a[href$="/drift.html"]:focus-visible,
 nav .dd .sub a[href$="/drift.html"].on,
 nav .dd .sub a[href="drift.html"]:hover,
 nav .dd .sub a[href="drift.html"]:focus-visible,
-nav .dd .sub a[href="drift.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+nav .dd .sub a[href="drift.html"].on{color:#fff!important;background:#111!important;}
 nav .dd .sub a[href$="/hill-climb.html"]:hover,
 nav .dd .sub a[href$="/hill-climb.html"]:focus-visible,
 nav .dd .sub a[href$="/hill-climb.html"].on,
@@ -58,10 +58,12 @@ nav .dd .sub a[href="e-gaming.html"].on{color:#E8202E!important;background:#f4f4
 nav .dd .sub a[data-stc-hover]{color:#111!important;}
 nav .dd .sub a[data-stc-hover]:is(:hover,:focus-visible,.on){color:var(--stc-brand)!important;background:#f3f3f3!important;}
 nav .dd .sub a[data-stc-hover]:is(:hover,:focus-visible,.on)::before{border-color:var(--stc-brand)!important;color:var(--stc-brand)!important;}
+nav .dd .sub a[data-stc-hover="drift"]:is(:hover,:focus-visible,.on){color:#fff!important;background:#111!important;}
+nav .dd .sub a[data-stc-hover="drift"]:is(:hover,:focus-visible,.on)::before{border-color:#fff!important;color:#fff!important;}
 </style>
 <script id="stc-verified-hover-script">
 document.addEventListener('DOMContentLoaded',function(){
-  const brands = {karting:'#E8202E',autocross:'#00875A','time-attack':'#E8202E',drift:'#E8202E','hill-climb':'#00875A',baja:'#BB945D','e-gaming':'#E8202E'};
+  const brands = {karting:'#E8202E',autocross:'#00875A','time-attack':'#E8202E',drift:'#111111','hill-climb':'#00875A',baja:'#BB945D','e-gaming':'#E8202E'};
   document.querySelectorAll('nav .dd .sub a').forEach(a=>{
     const slug = (a.getAttribute('href')||'').split('?')[0].split('/').pop().replace(/\.html$/,'');
     if(!brands[slug]) return;
@@ -69,7 +71,7 @@ document.addEventListener('DOMContentLoaded',function(){
     a.style.setProperty('--stc-brand',brands[slug]);
     // Remove generic page-colored .on state from category links unless selected.
     const active=() => a.matches(':hover,:focus-visible') || a.classList.contains('on');
-    const update=()=>{a.style.setProperty('color', active() ? brands[slug] : '#111','important');a.style.setProperty('background',active() ? '#f3f3f3' : 'transparent','important');};
+    const update=()=>{const isDrift=slug==='drift' && active();a.style.setProperty('color',isDrift?'#fff':(active()?brands[slug]:'#111'),'important');a.style.setProperty('background',isDrift?'#111':(active()?'#f3f3f3':'transparent'),'important');};
     ['pointerenter','pointerleave','focus','blur'].forEach(event=>a.addEventListener(event,update));
     update();
   });
