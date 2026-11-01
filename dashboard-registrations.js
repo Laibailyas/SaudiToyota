@@ -1,6 +1,6 @@
 /* Dashboard → Registrations
    Entries: every submission, grouped by race (and by form), filter racers / photographers, search, status,
-            organiser fields, documents, e-mail status, CSV export, delete.
+            organiser fields, documents, e-mail status, PDF export, delete.
    Races:   open registration for a specific race — name, location, category, dates, deadline — and choose
             whether racers, photographers or both can register. Also the e-mail notification settings.
    Forms:   add, edit, reorder, close or delete the registration forms, their steps and fields.
@@ -196,7 +196,7 @@
       <div class="race-form-head"><div><span class="eyebrow">ENTRIES</span><h2>${esc(title)}</h2>
         <p class="field-hint">${sub}${list.length} of ${scope.length} entries shown · ${scope.filter((e) => roleOf(e) === "racer").length} racers, ${scope.filter((e) => roleOf(e) === "photographer").length} photographers. Click an entry to open it.</p></div>
         <div class="race-actions">
-          <button type="button" data-a="export"${list.length ? "" : " disabled"}>Export CSV (Excel)</button>
+          <button type="button" data-a="export"${list.length ? "" : " disabled"}>Export PDF</button>
           <button type="button" class="danger" data-a="delete-selected"${state.selected.size ? "" : " disabled"}>Delete selected (${state.selected.size})</button>
         </div></div>
       <div class="reg-filters">
@@ -296,7 +296,7 @@
     } catch (error) { setStatus(error.message, "error"); }
   }
 
-  function exportCsv() {
+  function exportPdf() {
     const list = filteredEntries();
     const cols = new Map();
     const addFields = (fid, label, type) => { if (!cols.has(fid)) cols.set(fid, { label, type }); };
@@ -308,14 +308,22 @@
       formById(e.form)?.title || e.form_title, fmtDate(e.created), STATUS_LABEL[e.status] || e.status, MAIL_LABEL[e.mail?.registrant] || "", e.total ?? "",
       e.admin?.entry_no, e.admin?.competition_no, e.admin?.class_confirmed, e.admin?.fee_received ? "Yes" : "No", e.admin?.received_by, e.admin?.remarks,
       ...[...cols.entries()].map(([fid, c]) => entryValue(e, fid, c.type))]);
-    const cell = (v) => { const s = String(v ?? ""); return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-    const csv = "﻿" + [head, ...rows].map((r) => r.map(cell).join(",")).join("\r\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const scopeName = [state.raceId !== "all" ? slug(raceTitle(state.raceId)) : "", state.formId !== "all" ? state.formId : "", state.role ? `${state.role}s` : ""].filter(Boolean).join("-") || "all";
-    a.download = `registrations-${scopeName}-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.append(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    if (!window.STCPdf) { setStatus("PDF export is still loading, please try again.", "error"); return; }
+    window.STCPdf.export({
+      button: main.querySelector('[data-a="export"]'),
+      filename: `registrations-${scopeName}-${new Date().toISOString().slice(0, 10)}.pdf`,
+      eyebrow: "Registrations",
+      title: "Registrations",
+      meta: [`${list.length} ${list.length === 1 ? "entry" : "entries"}`,
+        state.raceId !== "all" ? raceTitle(state.raceId) : "All races",
+        state.formId !== "all" ? (formById(state.formId)?.title || state.formId) : "All forms",
+        state.role ? (ROLE_LABEL[state.role] || state.role) : ""].filter(Boolean),
+      layout: "cards",
+      columns: head.map((label) => ({ label })),
+      rows: rows.map((r, i) => ({ tag: list[i].ref, title: [list[i].race?.name, ROLE_LABEL[roleOf(list[i])]].filter(Boolean).join(" · ") || r[6], cells: r.map((v) => (v == null ? "" : v)) })),
+      empty: "No registrations match the current filters.",
+    }).catch((error) => setStatus(error.message || "PDF export failed.", "error"));
   }
 
   /* ---------------------------------------------------------------- races */
@@ -847,7 +855,7 @@
     if (!btn) return;
     const a = btn.dataset.a;
     if (a === "refresh") return load(true);
-    if (a === "export") return exportCsv();
+    if (a === "export") return exportPdf();
     if (a === "delete-selected") return deleteEntries([...state.selected]);
     if (a === "close") return closeEntry();
     if (a === "delete-entry") return deleteEntries([btn.dataset.key]);

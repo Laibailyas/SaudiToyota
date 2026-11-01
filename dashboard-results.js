@@ -217,7 +217,7 @@
             <div class="results-tools">
               <button data-el="row-add" type="button">+ Add row</button>
               <label class="file-btn">Import CSV<input data-el="csv" type="file" accept=".csv,text/csv,.txt"></label>
-              <button data-el="export" type="button">Export CSV</button>
+              <button data-el="export" type="button">Export PDF</button>
               <button data-el="template" type="button">CSV template</button>
               ${cfg.computed ? '<button data-el="rank" type="button">Auto-rank by best time</button>' : ""}
               <button data-el="sort" type="button">Sort by position</button>
@@ -530,7 +530,19 @@
     el("export").addEventListener("click", () => {
       const race = current();
       if (!race) return;
-      download(`${slug(race.title)}.csv`, [LABELS.join(",")].concat(race.rows.map((row) => FIELDS.map((k) => csvCell(row[k])).join(","))).join("\r\n"));
+      if (!window.STCPdf) { setStatus("PDF export is still loading, please try again.", "error"); return; }
+      const statusLabel = (cfg.statuses.find((s) => s[0] === race.status) || [])[1] || race.status;
+      const narrow = new Set(["pos", "no", "nat", "pen1", "pen2", "pen3"]);
+      window.STCPdf.export({
+        button: el("export"),
+        filename: `${slug(race.title) || mode}.pdf`,
+        eyebrow: mode === "live" ? "Live Scores" : "Race Results",
+        title: race.title || (mode === "live" ? "Live timing" : "Results"),
+        meta: [`${race.rows.length} ${race.rows.length === 1 ? "entry" : "entries"}`, race.category, race.round, race.location, race.date, statusLabel].filter(Boolean),
+        columns: FIELDS.map((k, i) => ({ label: LABELS[i], width: k === "pos" ? "5%" : narrow.has(k) ? "6%" : k === "driver" ? "minmax(0,1.6fr)" : "minmax(0,1fr)", big: k === "pos" || k === "driver", plain: k === "link" })),
+        rows: race.rows.map((row) => FIELDS.map((k) => row[k] ?? "")),
+        empty: "No rows in this race yet.",
+      }).catch((error) => setStatus(error.message || "PDF export failed.", "error"));
     });
     el("template").addEventListener("click", () => download(`${mode}-template.csv`, `${LABELS.join(",")}\r\n${cfg.template}\r\n`));
 
