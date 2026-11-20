@@ -545,6 +545,11 @@
       history.replaceState(null, "", u.href);
     } catch (e) {}
   }
+  function category() {
+    var c = (host && host.getAttribute("data-category")) || "";
+    if (!c) { try { c = new URLSearchParams(location.search).get("category") || ""; } catch (e) {} }
+    return String(c).trim().toLowerCase();
+  }
   function initial() {
     var q = {};
     try { var p = new URLSearchParams(location.search); q = { race: p.get("race"), role: p.get("role"), form: p.get("form") }; } catch (e) {}
@@ -580,6 +585,12 @@
         r.roles = (r.roles || []).filter(function (role) { var f = formById(r.forms && r.forms[role]); return role === "racer" && f && f.steps && f.steps.length; });
         return r.roles.length;
       });
+      /* When the form is embedded inside a championship page, show only that championship's races. */
+      var only = category();
+      if (only) {
+        var sub = races.filter(function (r) { return String(r.category || "").toLowerCase() === only; });
+        if (sub.length) races = sub;
+      }
       host.textContent = "";
       if (!races.length) {
         tabsEl.hidden = true;
