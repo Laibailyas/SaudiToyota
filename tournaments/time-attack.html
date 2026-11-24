@@ -727,6 +727,17 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 
 <style id="task9-logo-backdrop">nav > img.logo { background: #fff; border-radius: 8px; padding: 5px 8px; box-sizing: border-box; object-fit: contain; } </style>
+<style id="partner-logo-visibility-fix">
+/* Partner logo visibility on white cards: original artwork files remain untouched. */
+.partners .pc > img.gi{display:block;position:relative;z-index:1;max-width:88%;max-height:80%;height:auto;object-fit:contain;object-position:center;pointer-events:none}
+.partners .pc[data-img="lexonz"] > img.gi,
+.partners .pc[data-img="brandship"] > img.gi,
+.partners .pc[data-img="mos"] > img.gi,
+.partners .pc[data-img="bakhashab"] > img.gi{filter:brightness(0);opacity:.88}
+.partners .pc[data-img="toyota"] > img.gi{width:82%}
+.partners .pc[data-img="jameel"] > img.gi{width:68%}
+.partners .pc[data-img="samf-p"] > img.gi{width:72%}
+</style>
 </head>
 <body class="loading">
 <div class="preloader" id="preloader" aria-hidden="true">
@@ -1262,22 +1273,22 @@ render();
 
  <div class="lbl">Official Partner</div>
  <div class="row">
-  <div class="pc w1" data-img="toyota"><a href="https://www.toyota.com.sa/ar?utm_source=google&amp;utm_medium=paid_cpc&amp;utm_campaign=mp_aljm_AlwaysOnSEM-cn_branding_branded-cm_may_24&amp;utm_content=conversion_branded-search-ar_ksa_none" target="_blank" rel="noopener noreferrer" aria-label="Visit toyota website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm ty"><svg viewBox="0 0 60 40"><g fill="none" stroke="#e8202e" stroke-width="3"><ellipse cx="30" cy="20" rx="27" ry="17"/><ellipse cx="30" cy="20" rx="9" ry="16"/><ellipse cx="30" cy="12" rx="16" ry="6"/></g></svg><b>TOYOTA</b></div></div>
-  <div class="pc w1" data-img="jameel"><a href="https://www.jameelmotorsport.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit jameel website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm jm"><b>JAMEEL</b><i>motorsport</i></div></div>
+  <div class="pc w1" data-img="toyota"><img class="gi" src="../assets/logos/p-toyota-client.webp" alt="toyota" loading="lazy" decoding="async"><a href="https://www.toyota.com.sa/ar?utm_source=google&amp;utm_medium=paid_cpc&amp;utm_campaign=mp_aljm_AlwaysOnSEM-cn_branding_branded-cm_may_24&amp;utm_content=conversion_branded-search-ar_ksa_none" target="_blank" rel="noopener noreferrer" aria-label="Visit toyota website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm ty"><svg viewBox="0 0 60 40"><g fill="none" stroke="#e8202e" stroke-width="3"><ellipse cx="30" cy="20" rx="27" ry="17"/><ellipse cx="30" cy="20" rx="9" ry="16"/><ellipse cx="30" cy="12" rx="16" ry="6"/></g></svg><b>TOYOTA</b></div></div>
+  <div class="pc w1" data-img="jameel"><img class="gi" src="../assets/logos/p-jameel-client.webp" alt="jameel" loading="lazy" decoding="async"><a href="https://www.jameelmotorsport.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit jameel website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm jm"><b>JAMEEL</b><i>motorsport</i></div></div>
  </div>
  <div class="ptier-sep"></div>
 
  <div class="duo">
-  <div><div class="lbl">Strategic Supporter</div><div class="pc w2" data-img="brandship"><a href="https://ourbrandship.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit brandship website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm bs"><b>brandship</b><i>Building Iconic Saudi Brands</i></div></div></div>
-  <div><div class="lbl">Event Supporter</div><div class="pc w2" data-img="lexonz"><a href="https://lexonz.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit lexonz website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm lx"><b>lexonz</b></div></div></div>
+  <div><div class="lbl">Strategic Supporter</div><div class="pc w2" data-img="brandship"><img class="gi" src="../assets/logos/p-brandship.webp" alt="brandship" loading="lazy" decoding="async"><a href="https://ourbrandship.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit brandship website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm bs"><b>brandship</b><i>Building Iconic Saudi Brands</i></div></div></div>
+  <div><div class="lbl">Event Supporter</div><div class="pc w2" data-img="lexonz"><img class="gi" src="../assets/logos/p-lexonz.webp" alt="lexonz" loading="lazy" decoding="async"><a href="https://lexonz.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit lexonz website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm lx"><b>lexonz</b></div></div></div>
  </div>
 
  <div class="ptier-sep"></div>
  <div class="lbl">Organizers</div>
  <div class="row">
-  <div class="pc w3" data-img="mos"><a href="https://www.mos.gov.sa/ar" target="_blank" rel="noopener noreferrer" aria-label="Visit mos website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm sm"><span class="ar">وزارة الرياضة</span><span>Ministry of Sport</span></div></div>
-  <div class="pc w3" data-img="samf-p"><a href="https://samf.gov.sa/" target="_blank" rel="noopener noreferrer" aria-label="Visit samf-p website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm sm"><span class="ar">الاتحاد السعودي للسيارات والدراجات النارية</span><span>Saudi Automobile &amp; Motorcycle Federation</span></div></div>
-  <div class="pc w3" data-img="bakhashab"><div class="wm ab"><b>AB</b><span>Abdullah S. Bakhashab Co.</span></div></div>
+  <div class="pc w3" data-img="mos"><img class="gi" src="../assets/logos/p-mos.webp" alt="mos" loading="lazy" decoding="async"><a href="https://www.mos.gov.sa/ar" target="_blank" rel="noopener noreferrer" aria-label="Visit mos website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm sm"><span class="ar">وزارة الرياضة</span><span>Ministry of Sport</span></div></div>
+  <div class="pc w3" data-img="samf-p"><img class="gi" src="../assets/logos/p-samf-p.webp" alt="samf-p" loading="lazy" decoding="async"><a href="https://samf.gov.sa/" target="_blank" rel="noopener noreferrer" aria-label="Visit samf-p website" style="position:absolute;inset:0;z-index:5;display:block"></a><div class="wm sm"><span class="ar">الاتحاد السعودي للسيارات والدراجات النارية</span><span>Saudi Automobile &amp; Motorcycle Federation</span></div></div>
+  <div class="pc w3" data-img="bakhashab"><img class="gi" src="../assets/logos/p-bakhashab.webp" alt="bakhashab" loading="lazy" decoding="async"><div class="wm ab"><b>AB</b><span>Abdullah S. Bakhashab Co.</span></div></div>
  </div>
 </section>
 <footer class="foot">
@@ -1301,6 +1312,7 @@ render();
 var IMGS={card:'',samf:'../assets/logos/samf.webp',jameel:'../assets/logos/p-jameel-client.webp',toyota:'../assets/logos/p-toyota-client.webp',brandship:'../assets/logos/p-brandship.webp',lexonz:'../assets/logos/p-lexonz.webp',mos:'../assets/logos/p-mos.webp','samf-p':'../assets/logos/p-samf-p.webp',bakhashab:'../assets/logos/p-bakhashab.webp'};
 document.querySelectorAll('[data-img]').forEach(function(el){
  var u=IMGS[el.dataset.img];if(!u)return;
+ if(el.querySelector('img.gi')){el.classList.add('has-img');return;}
  var im=new Image();im.className='gi';im.alt='';
  im.onload=function(){el.classList.add('has-img');el.appendChild(im)};
  im.src=u;
