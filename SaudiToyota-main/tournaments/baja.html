@@ -1194,6 +1194,11 @@ html[dir=rtl] .brx .rb{left:auto;right:16px}
 html[dir=rtl] .brx .rt .go svg{rotate:180deg}
 html[dir=rtl] .brx .rc:hover .go svg{translate:-5px 0}
 @media(max-width:820px){.brx .grid{grid-template-columns:1fr}.brx .rc{aspect-ratio:16/11}}
+/* Official rally logo chip (top corner opposite the round badge) */
+.brx .rc .rlogo{position:absolute;z-index:2;top:14px;right:14px;display:flex;align-items:center;justify-content:center;height:clamp(64px,5.8vw,96px);padding:7px 9px;border-radius:12px;background:#fff;box-shadow:0 6px 22px rgba(0,0,0,.35)}
+.brx .rc .rlogo img{position:static;inset:auto;display:block;width:auto;height:100%;max-width:clamp(96px,8.6vw,140px);object-fit:contain;transition:none}
+.brx .rc:hover .rlogo img{scale:1}
+html[dir=rtl] .brx .rc .rlogo{right:auto;left:14px}
 
 /* Partner and sponsor cards: white backgrounds, original colored logos */
 .partners .pc{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:10px;box-shadow:0 2px 14px rgba(0,0,0,.12)}
@@ -1212,10 +1217,12 @@ html[dir=rtl] .brx .rc:hover .go svg{translate:-5px 0}
     <span class="rt"><h3>Hail Rally</h3><p>Hail Toyota International Baja — desert stages across the Hail region.</p>
     <span class="go">Open the rally <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span></a>
    <a class="rc" href="baja-jeddah.html"><img src="../assets/baja/ph3.webp" alt="Jeddah Rally">
+    <span class="rlogo" data-noi18n><img src="../assets/logos/rally-jeddah-2026.webp" alt="Jeddah Rally 2026 official logo" loading="lazy"></span>
     <span class="rb">Round <b>03</b></span>
     <span class="rt"><h3>Jeddah Rally</h3><p>Jeddah Toyota Baja — the closing round on the Red Sea coast.</p>
     <span class="go">Open the rally <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span></a>
    <a class="rc" href="baja-qassim.html"><img src="../assets/baja/ph5.webp" alt="Qassim Rally">
+    <span class="rlogo" data-noi18n><img src="../assets/logos/rally-qassim-2026.webp" alt="Qassim Baja Rally 2026 official logo" loading="lazy"></span>
     <span class="rb">Round <b>02</b></span>
     <span class="rt"><h3>Qassim Rally</h3><p>Qassim Toyota Baja — sand, open plains and navigation across Qassim.</p>
     <span class="go">Open the rally <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></span></a>
