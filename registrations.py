@@ -432,8 +432,8 @@ def clean_races(doc, forms_doc):
 # Arabic for the race names / locations of the seeded calendar, used when the organiser left the Arabic empty,
 # so the Arabic page never shows English race text.
 AR_WORDS = [
-    ("QUALIFYING RACE", "سباق التأهيل"), ("TIME ATTACK", "تحدي الوقت"), ("HILL CLIMB", "صعود الهضبة"),
-    ("AUTOCROSS", "الأوتوكروس"), ("KARTING", "الكارتينج"), ("DRIFT", "الدريفت"), ("BAJA", "الباها"),
+    ("QUALIFYING RACE", "سباق التأهيل"), ("TIME ATTACK", "كسر الزمن"), ("HILL CLIMB", "صعود الهضبة"),
+    ("AUTOCROSS", "الالأوتوكروس"), ("KARTING", "الكارتينج"), ("DRIFT", "الدريفت"), ("BAJA", "الباها"),
     ("ROUND", "الجولة"), ("FINAL", "النهائي"), ("RALLY", "رالي"), ("AL-AHSA", "الأحساء"), ("JEDDAH", "جدة"),
     ("QASSIM", "القصيم"), ("HAIL", "حائل"), ("RIYADH", "الرياض"), ("TABUK", "تبوك"), ("DAMMAM", "الدمام"),
 ]

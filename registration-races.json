@@ -141,7 +141,7 @@
     {
       "id": "race-10",
       "name": "AUTOCROSS – ROUND 1",
-      "name_ar": "اوتوكروس – الجولة 1",
+      "name_ar": "الأوتوكروس – الجولة 1",
       "location": "PRINCE ABDULLAH BIN JALAWI STADIUM PARKING",
       "location_ar": "مواقف ملعب الأمير عبدالله بن جلوي",
       "category": "autocross",
@@ -209,7 +209,7 @@
     {
       "id": "race-15",
       "name": "AUTOCROSS – AL-AHSA ROUND 2",
-      "name_ar": "اوتوكروس – الجولة 2 – الأحساء",
+      "name_ar": "الأوتوكروس – الجولة 2 – الأحساء",
       "location": "PRINCE ABDULLAH BIN JALAWI STADIUM PARKING",
       "location_ar": "مواقف ملعب الأمير عبدالله بن جلوي",
       "category": "autocross",
@@ -277,7 +277,7 @@
     {
       "id": "race-21",
       "name": "AUTOCROSS – JEDDAH ROUND 3",
-      "name_ar": "اوتوكروس – الجولة 3 – جدة",
+      "name_ar": "الأوتوكروس – الجولة 3 – جدة",
       "location": "Formula 1 Parking, King Abdulaziz Road",
       "location_ar": "مواقف الفورمولا 1، طريق الملك عبدالعزيز",
       "category": "autocross",

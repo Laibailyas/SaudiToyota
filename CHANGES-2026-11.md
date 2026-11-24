@@ -13,7 +13,7 @@ site (saudi-championship.com).
 
 | Was | Now | Where |
 |---|---|---|
-| تحدي الوقت | **كسر الزمن** | nav, home card, calendar, hero, results, live, registration, footer |
+| كسر الزمن | **كسر الزمن** | nav, home card, calendar, hero, results, live, registration, footer |
 | الأوتوكروس / أوتوكروس | **اوتوكروس** | everywhere (51 + 172 occurrences) |
 | الطرق الوعرة (Off-Road) | **باها / Baja** | home card + its logo |
 | الرياضات الإلكترونية | **الألعاب الإلكترونية** | championship name only |
