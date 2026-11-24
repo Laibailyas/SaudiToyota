@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Content Dashboard | Saudi Toyota Championship</title>
+  <link rel="stylesheet" href="/dashboard.css?v=3">
+  <script src="/dashboard.js?v=3" defer></script>
+  <script src="/dashboard-results.js?v=3" defer></script>
+  <link rel="stylesheet" href="/dashboard-registrations.css?v=4">
+  <script src="/dashboard-registrations.js?v=6" defer></script>
+  <script src="/pdf-export.js?v=2" defer></script>
+<style id="stc-category-brand-hover">
+/* Explicit category colors overriding global nav hover. */
+nav .dd .sub a[href$="/karting.html"]:hover,
+nav .dd .sub a[href$="/karting.html"]:focus-visible,
+nav .dd .sub a[href$="/karting.html"].on,
+nav .dd .sub a[href="karting.html"]:hover,
+nav .dd .sub a[href="karting.html"]:focus-visible,
+nav .dd .sub a[href="karting.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/autocross.html"]:hover,
+nav .dd .sub a[href$="/autocross.html"]:focus-visible,
+nav .dd .sub a[href$="/autocross.html"].on,
+nav .dd .sub a[href="autocross.html"]:hover,
+nav .dd .sub a[href="autocross.html"]:focus-visible,
+nav .dd .sub a[href="autocross.html"].on{color:#00875A!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/time-attack.html"]:hover,
+nav .dd .sub a[href$="/time-attack.html"]:focus-visible,
+nav .dd .sub a[href$="/time-attack.html"].on,
+nav .dd .sub a[href="time-attack.html"]:hover,
+nav .dd .sub a[href="time-attack.html"]:focus-visible,
+nav .dd .sub a[href="time-attack.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/drift.html"]:hover,
+nav .dd .sub a[href$="/drift.html"]:focus-visible,
+nav .dd .sub a[href$="/drift.html"].on,
+nav .dd .sub a[href="drift.html"]:hover,
+nav .dd .sub a[href="drift.html"]:focus-visible,
+nav .dd .sub a[href="drift.html"].on{color:#fff!important;background:#111!important;}
+nav .dd .sub a[href$="/hill-climb.html"]:hover,
+nav .dd .sub a[href$="/hill-climb.html"]:focus-visible,
+nav .dd .sub a[href$="/hill-climb.html"].on,
+nav .dd .sub a[href="hill-climb.html"]:hover,
+nav .dd .sub a[href="hill-climb.html"]:focus-visible,
+nav .dd .sub a[href="hill-climb.html"].on{color:#00875A!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/baja.html"]:hover,
+nav .dd .sub a[href$="/baja.html"]:focus-visible,
+nav .dd .sub a[href$="/baja.html"].on,
+nav .dd .sub a[href="baja.html"]:hover,
+nav .dd .sub a[href="baja.html"]:focus-visible,
+nav .dd .sub a[href="baja.html"].on{color:#BB945D!important;background:#f4f4f4!important;}
+nav .dd .sub a[href$="/e-gaming.html"]:hover,
+nav .dd .sub a[href$="/e-gaming.html"]:focus-visible,
+nav .dd .sub a[href$="/e-gaming.html"].on,
+nav .dd .sub a[href="e-gaming.html"]:hover,
+nav .dd .sub a[href="e-gaming.html"]:focus-visible,
+nav .dd .sub a[href="e-gaming.html"].on{color:#E8202E!important;background:#f4f4f4!important;}
+</style>
+<style id="stc-verified-item-hover">
+nav .dd .sub a[data-stc-hover]{color:#111!important;}
+nav .dd .sub a[data-stc-hover]:is(:hover,:focus-visible,.on){color:var(--stc-brand)!important;background:#f3f3f3!important;}
+nav .dd .sub a[data-stc-hover]:is(:hover,:focus-visible,.on)::before{border-color:var(--stc-brand)!important;color:var(--stc-brand)!important;}
+nav .dd .sub a[data-stc-hover="drift"]:is(:hover,:focus-visible,.on){color:#fff!important;background:#111!important;}
+nav .dd .sub a[data-stc-hover="drift"]:is(:hover,:focus-visible,.on)::before{border-color:#fff!important;color:#fff!important;}
+</style>
+<script id="stc-verified-hover-script">
+document.addEventListener('DOMContentLoaded',function(){
+  const brands = {karting:'#E8202E',autocross:'#00875A','time-attack':'#E8202E',drift:'#111111','hill-climb':'#00875A',baja:'#BB945D','e-gaming':'#E8202E'};
+  document.querySelectorAll('nav .dd .sub a').forEach(a=>{
+    const slug = (a.getAttribute('href')||'').split('?')[0].split('/').pop().replace(/\.html$/,'');
+    if(!brands[slug]) return;
+    a.setAttribute('data-stc-hover',slug);
+    a.style.setProperty('--stc-brand',brands[slug]);
+    // Remove generic page-colored .on state from category links unless selected.
+    const active=() => a.matches(':hover,:focus-visible') || a.classList.contains('on');
+    const update=()=>{const isDrift=slug==='drift' && active();a.style.setProperty('color',isDrift?'#fff':(active()?brands[slug]:'#111'),'important');a.style.setProperty('background',isDrift?'#111':(active()?'#f3f3f3':'transparent'),'important');};
+    ['pointerenter','pointerleave','focus','blur'].forEach(event=>a.addEventListener(event,update));
+    update();
+  });
+});
+</script>
+</head>
+<body>
+  <main id="login-screen" class="login-screen" hidden>
+    <form id="login-form" class="login-card">
+      <a class="brand" href="/">SAUDI <strong>TOYOTA</strong> CHAMPIONSHIP</a>
+      <h1>Content dashboard</h1>
+      <p>Log in to edit and publish site content.</p>
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">Log in</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </main>
+
+  <main id="editor-screen" class="editor-screen" hidden>
+    <header class="toolbar">
+      <a class="brand" href="/">SAUDI <strong>TOYOTA</strong> CHAMPIONSHIP</a>
+      <div class="mode-switch" role="tablist" aria-label="Dashboard section">
+        <button type="button" role="tab" class="on" aria-selected="true" data-mode="pages">Pages</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="scores">Race Scores</button>
+        <button type="button" role="tab" aria-selected="false" data-mode="live">Live Scores</button><button type="button" role="tab" aria-selected="false" data-mode="calendar">Calendar CSV</button><button type="button" role="tab" aria-selected="false" data-mode="registrations">Registrations</button>
+      </div>
+      <div class="toolbar-actions">
+        <label class="page-select-label" for="page-select">Page</label>
+        <select id="page-select"></select>
+        <button id="logout" class="quiet" type="button">Log out</button>
+      </div>
+    </header>
+    <div class="editor-layout">
+      <iframe id="page-preview" title="Page preview with editable content"></iframe>
+      <aside id="edit-sidebar" class="edit-sidebar" aria-label="Edit selected content">
+        <div class="sidebar-heading">
+          <span class="eyebrow">CONTENT EDITOR</span>
+          <h1>Edit page</h1>
+          <p>Choose a pencil on the page to edit its text or image.</p>
+        </div>
+        <section id="selection-empty" class="selection-empty" aria-live="polite">
+          Select a text block or image in the preview.
+        </section>
+        <section id="section-editor" class="selection-editor" hidden>
+          <h2 id="section-title">Section content</h2>
+          <div id="section-fields" class="section-fields"></div>
+        </section>
+        <div class="sidebar-footer">
+          <span id="editor-status" role="status">Select an item to start editing.</span>
+          <button id="save-page" class="primary" type="button" disabled>Save changes</button>
+        </div>
+      </aside>
+    </div>
+
+    <div id="calendar-layout" class="calendar-manager" hidden style="padding:40px;max-width:800px;margin:0 auto;color:#fff">
+      <h1>Calendar CSV Import</h1><p>Upload a CSV with columns: No, Event, Date, Type, City, Location. This replaces the published calendar events only after a successful import.</p>
+      <input id="calendar-import-file" type="file" accept=".csv,text/csv" style="margin:24px 0;display:block" />
+      <button id="calendar-import-action" type="button" class="primary">Import and publish CSV</button>
+      <p id="calendar-import-status" role="status" style="margin-top:20px"></p>
+    </div>
+    <div id="scores-layout" class="scores-layout" data-manager="scores" hidden></div>
+    <div id="live-layout" class="scores-layout" data-manager="live" hidden></div>
+    <div id="registrations-layout" class="scores-layout" hidden></div>
+  </main>
+</body>
+</html>
